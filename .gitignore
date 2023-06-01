@@ -1,4 +1,5 @@
 src/config.json
+dl/*
 
 # Gotta make sure the ytsr is added because of that one changed line in lib/util.js
 # https://github.com/TimeForANinja/node-ytsr/issues/180#issuecomment-1507709961
