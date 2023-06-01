@@ -28,11 +28,11 @@ class GuildPlayer {
         playTrack()
 
         this.connection.on('stateChange', (oldState, newState) => {
-            console.log(`Connection transitioned from ${oldState.status} to ${newState.status}`);
+            //console.log(`Connection transitioned from ${oldState.status} to ${newState.status}`);
         });
         
         this.player.on('stateChange', (oldState, newState) => {
-            console.log(`Audio player transitioned from ${oldState.status} to ${newState.status}`);
+            //console.log(`Audio player transitioned from ${oldState.status} to ${newState.status}`);
             if (newState.status == 'idle') {
                 // Check if we should loop or continue to the next track
                 if (!this.queue.options.looping) {
@@ -47,7 +47,7 @@ class GuildPlayer {
         });
     }
 
-    get looping() {
+    looping() {
         return this.queue.options.looping
     }
 

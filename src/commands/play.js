@@ -31,9 +31,11 @@ module.exports = {
         const member = await interaction.guild.members.fetch(interaction.member.id);
         const voiceState = member?.voice
 
+        await interaction.deferReply()
+
         // If the user is not in a voice channel
         if (!voiceState) {
-            return await interaction.reply('You must be in a voice channel!')
+            return await interaction.editReply('You must be in a voice channel!')
         }
 
         const connection = joinVoiceChannel({
@@ -49,39 +51,43 @@ module.exports = {
         const result = results.items[0]
 
         if (!result) {
-            return await interaction.reply('No video found')
+            return await interaction.editReply({content: 'No video found'})
         }
 
         const filePath = path.join(dlPath, `${result.id}.ogg`)
         const fileUrl = validUrl.replace('__id__', result.id)
 
         let cont = async () => {
-            let guildPlayer = Globals.getPlayer(guildId)
-            if (guildPlayer ? guildPlayer.connection != undefined : false) {
-                guildPlayer.queue.addTrack(new Track(filePath))
+            let gp = Globals.getPlayer(guildId)
+            if (gp ? gp.connection != undefined : false) {
+                gp.queue.addTrack(new Track(filePath))
 
-                return await interaction.reply('Added to queue!')
+                if (!interaction.replied) {
+                    return await interaction.editReply("Added to queue.")
+                }
             }
 
             // Configure Globals
             const queue = new Queue([new Track(filePath)])
-            guildPlayer = new GuildPlayer(connection, queue)
+            const guildPlayer = new GuildPlayer(connection, queue)
 
             // Initialize player if it doesn't already exist
             if (!Globals.getPlayer(guildId)) {
                 Globals.setPlayer(guildId, guildPlayer)
-            }
+            } 
 
             await guildPlayer.start()
-            await interaction.reply("Attempting to play resource.")
+
+            if (!interaction.replied) {
+                console.log(interaction)
+                await interaction.editReply("Attempting to play resource.")
+            }
         }
 
         if (fs.existsSync(filePath)) {
             await cont()
         } else {
-            ytdl(
-                fileUrl, { filter: 'audioonly', format: 'highestaudio' }
-            ).pipe(fs.createWriteStream(filePath)).on("finish", async () => {
+            ytdl(fileUrl, { filter: 'audioonly', format: 'highestaudio' }).pipe(fs.createWriteStream(filePath)).on("finish", async () => {
                 await cont()
             });
         }

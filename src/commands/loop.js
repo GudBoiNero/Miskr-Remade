@@ -11,8 +11,17 @@ module.exports = {
         const guildId = interaction.guildId
         const guildPlayer = Globals.getPlayer(guildId)
 
-        if (Globals.senseChecks(interaction)) {
-            guildPlayer.loop(!guildPlayer.looping())
+        if (guildPlayer) {
+            const looping = guildPlayer.looping()
+            guildPlayer.loop(!looping)
+            if (!looping) {
+                await interaction.reply('Looping!')
+            } else {
+                await interaction.reply('Stopped looping!')
+            }
+            
+        } else {
+            await interaction.reply('Cannot loop if there is nothing playing!')
         }
     }
 }
