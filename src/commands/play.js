@@ -1,0 +1,89 @@
+const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
+const { joinVoiceChannel, createAudioResource, StreamType, generateDependencyReport, entersState, VoiceConnectionStatus } = require('@discordjs/voice')
+const Globals = require("../globals.js");
+const GuildPlayer = require("../classes/GuildPlayer.js");
+const Track = require('../classes/Track.js')
+const ytdl = require('ytdl-core')
+const ytsr = require('ytsr')
+const path = require('path')
+const fs = require('fs');
+const Queue = require("../classes/Queue.js");
+
+const validUrl = "https://www.youtube.com/watch?v=__id__"
+const dlPath = path.join(__dirname.replace('src\\commands', 'res'), 'dl')
+
+module.exports = {
+    data: new SlashCommandBuilder().setName('play')
+        .addStringOption(option => {
+            option.setName('query')
+                .setRequired(true)
+                .setDescription('The title of the youtube video.')
+
+            return option
+        })
+        .setDescription('...'),
+    /**
+     * @param {CommandInteraction} interaction 
+     */
+    async execute(interaction) {
+        const guildId = interaction.guildId
+        const query = interaction.options.get('query')?.value
+        const member = await interaction.guild.members.fetch(interaction.member.id);
+        const voiceState = member?.voice
+
+        // If the user is not in a voice channel
+        if (!voiceState) {
+            return await interaction.reply('You must be in a voice channel!')
+        }
+
+        const connection = joinVoiceChannel({
+            channelId: voiceState.channelId,
+            guildId: voiceState.guild.id,
+            adapterCreator: voiceState.guild.voiceAdapterCreator,
+        });
+
+        if (!connection) return
+
+        // Download
+        const results = await ytsr(query, { "pages": 1 })
+        const result = results.items[0]
+
+        if (!result) {
+            return await interaction.reply('No video found')
+        }
+
+        const filePath = path.join(dlPath, `${result.id}.ogg`)
+        const fileUrl = validUrl.replace('__id__', result.id)
+
+        let cont = async () => {
+            let guildPlayer = Globals.getPlayer(guildId)
+            if (guildPlayer ? guildPlayer.connection != undefined : false) {
+                guildPlayer.queue.addTrack(new Track(filePath))
+
+                return await interaction.reply('Added to queue!')
+            }
+
+            // Configure Globals
+            const queue = new Queue([new Track(filePath)])
+            guildPlayer = new GuildPlayer(connection, queue)
+
+            // Initialize player if it doesn't already exist
+            if (!Globals.getPlayer(guildId)) {
+                Globals.setPlayer(guildId, guildPlayer)
+            }
+
+            await guildPlayer.start()
+            await interaction.reply("Attempting to play resource.")
+        }
+
+        if (fs.existsSync(filePath)) {
+            await cont()
+        } else {
+            ytdl(
+                fileUrl, { filter: 'audioonly', format: 'highestaudio' }
+            ).pipe(fs.createWriteStream(filePath)).on("finish", async () => {
+                await cont()
+            });
+        }
+    }
+}
