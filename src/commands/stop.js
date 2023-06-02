@@ -13,6 +13,7 @@ module.exports = {
 
         if (guildPlayer) {
             guildPlayer.disconnect()
+            Globals.destroyPlayer(guildId)
             await interaction.reply('Stopped!')
         } else {
             await interaction.reply('Cannot stop the music if there is nothing playing!')

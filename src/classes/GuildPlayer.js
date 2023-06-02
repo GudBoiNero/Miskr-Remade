@@ -2,6 +2,7 @@ const {consoleColors} = require('../util/consoleColors.js')
 const Queue = require('./Queue.js')
 const { createAudioPlayer, VoiceConnection, NoSubscriberBehavior, VoiceConnectionStatus, createAudioResource, joinVoiceChannel, StreamType } = require('@discordjs/voice')
 const Track = require('./Track.js')
+const Globals = require('../globals.js')
 
 class GuildPlayer {
     currentTrack = Track
@@ -28,14 +29,8 @@ class GuildPlayer {
         }
 
         this.currentTrack = this.queue.nextTrack()
-        
-        const playTrack = () => {
-            const resource = createAudioResource(this.currentTrack.path, { inputType: StreamType.OggOpus, inlineVolume: true })
-            this.connection.subscribe(this.player)
-            this.player.play(resource)
-        } 
 
-        playTrack()
+        this.playTrack()
 
         this.connection.on('stateChange', (oldState, newState) => {
             console.log(consoleColors.FG_GREEN+`Connection transitioned from ${oldState.status} to ${newState.status}`);
@@ -48,16 +43,27 @@ class GuildPlayer {
             console.log(consoleColors.FG_RED+`Audio player transitioned from ${oldState.status} to ${newState.status}`);
             if (newState.status == 'idle') {
                 // Check if we should loop or continue to the next track
-                if (!this.queue.options.looping) {
-                    this.currentTrack = this.queue.nextTrack()
-                    // If it's the end of the queue and we should not loop the queue
-                    if (!this.currentTrack) {
-                        return this.disconnect()
-                    }
-                }
-                playTrack()
+                this.trackFinished()
             }
         });
+    }
+
+    playTrack() {
+        const resource = createAudioResource(this.currentTrack.path, { inputType: StreamType.OggOpus, inlineVolume: true })
+        this.connection.subscribe(this.player)
+        this.player.play(resource)
+    } 
+
+    trackFinished() {
+        // Check if we should loop or continue to the next track
+        if (!this.queue.options.looping) {
+            this.currentTrack = this.queue.nextTrack()
+            // If it's the end of the queue and we should not loop the queue
+            if (!this.currentTrack) {
+                return this.disconnect()
+            }
+        }
+        this.playTrack()
     }
 
     looping() {

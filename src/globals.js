@@ -71,6 +71,16 @@ class GlobalState {
         }
         cache.players[guildId] = player
     }
+
+    /**
+     * 
+     * @param {Number} guildId 
+     */
+    destroyPlayer(guildId) {
+        if (cache.players[guildId] != undefined) {
+            delete cache.players[guildId]
+        }
+    }
 }
 
 let Globals = Object.freeze(new GlobalState());
