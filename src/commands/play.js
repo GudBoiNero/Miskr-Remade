@@ -50,7 +50,7 @@ module.exports = {
         const results = await ytsr(query, { "pages": 1 })
         const result = results.items[0]
 
-        if (!result) {
+        if (!result ? false : !result.id) {
             return await interaction.editReply({content: 'No video found'})
         }
 
@@ -58,29 +58,28 @@ module.exports = {
         const fileUrl = validUrl.replace('__id__', result.id)
 
         let cont = async () => {
+            // If there is already a GuildPlayer with an active connection.
+            // Add the track to the queue
             let gp = Globals.getPlayer(guildId)
-            if (gp ? gp.connection != undefined : false) {
+            if ((gp ? gp.connection != undefined : false) && !gp.destroyed) {
                 gp.queue.addTrack(new Track(filePath))
 
                 if (!interaction.replied) {
-                    return await interaction.editReply("Added to queue.")
+                    return await interaction.editReply(`**Added ${fileUrl} to queue.**`)
                 }
             }
 
             // Configure Globals
             const queue = new Queue([new Track(filePath)])
-            const guildPlayer = new GuildPlayer(connection, queue)
+            const guildPlayer = new GuildPlayer(connection, guildId, queue)
 
             // Initialize player if it doesn't already exist
-            if (!Globals.getPlayer(guildId)) {
-                Globals.setPlayer(guildId, guildPlayer)
-            } 
+            Globals.setPlayer(guildId, guildPlayer)
 
             await guildPlayer.start()
 
             if (!interaction.replied) {
-                console.log(interaction)
-                await interaction.editReply("Attempting to play resource.")
+                await interaction.editReply(`**Attempting to play ${fileUrl}.**`)
             }
         }
 

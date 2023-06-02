@@ -66,6 +66,9 @@ class GlobalState {
      * @param {GuildPlayer} player
      */
     setPlayer(guildId, player) {
+        if (this.getPlayer(guildId)) {
+            this.getPlayer(guildId).disconnect()
+        }
         cache.players[guildId] = player
     }
 }
