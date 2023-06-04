@@ -73,7 +73,6 @@ class GlobalState {
     }
 
     /**
-     * 
      * @param {Number} guildId 
      */
     destroyPlayer(guildId) {
