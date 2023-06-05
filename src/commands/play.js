@@ -9,6 +9,7 @@ const path = require('path')
 const fs = require('fs');
 const Queue = require("../classes/Queue.js");
 const { canUseVoiceCommand } = require("../util/voice.js");
+const createThemedEmbed = require("../util/createThemedEmbed.js");
 
 const validUrl = "https://www.youtube.com/watch?v=__id__"
 const dlPath = path.join('./', 'res/dl')
@@ -33,6 +34,8 @@ module.exports = {
         const member = await interaction.guild.members.fetch(interaction.member.id);
         const voiceState = member?.voice
 
+        interaction.deferReply()
+
         const connection = joinVoiceChannel({
             channelId: voiceState.channelId,
             guildId: voiceState.guild.id,
@@ -43,10 +46,11 @@ module.exports = {
 
         // Download
         const results = await ytsr(query, { "pages": 1 })
+        
         const result = results.items[0]
 
         if (!result ? false : !result.id) {
-            return await interaction.editReply({content: 'No video found'})
+            return await interaction.editReply({embeds: [createThemedEmbed("Error", 'Could not find a video', 'Error')]})
         }
 
         const filePath = path.join(dlPath, `${result.id}.ogg`)
@@ -57,15 +61,15 @@ module.exports = {
             // Add the track to the queue
             let gp = Globals.getPlayer(guildId)
             if ((gp ? gp.connection != undefined : false) && !gp.destroyed) {
-                gp.queue.addTrack(new Track(filePath))
+                gp.queue.addTrack(new Track(filePath, result))
 
                 if (!interaction.replied) {
-                    return await interaction.editReply(`**Added ${fileUrl} to queue.**`)
+                    return await interaction.editReply({embeds: [createThemedEmbed("Util",`Added [${result.title}](${fileUrl}) to queue.`, 'Added to Queue')]})
                 }
             }
 
             // Configure Globals
-            const queue = new Queue([new Track(filePath)])
+            const queue = new Queue([new Track(filePath, result)])
             const guildPlayer = new GuildPlayer(connection, guildId, queue)
 
             // Initialize player if it doesn't already exist
@@ -74,7 +78,7 @@ module.exports = {
             await guildPlayer.start()
 
             if (!interaction.replied) {
-                await interaction.editReply(`**Attempting to play ${fileUrl}.**`)
+                await interaction.editReply({embeds: [createThemedEmbed("Action", `[${result.title}](${fileUrl})`, 'Now Playing:', result.bestThumbnail.url)]})
             }
         }
 

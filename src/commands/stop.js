@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
 const Globals = require("../globals.js");
+const createThemedEmbed = require("../util/createThemedEmbed.js");
 
 module.exports = {
     isVoiceCommand: true,
@@ -14,9 +15,9 @@ module.exports = {
 
         if (guildPlayer) {
             Globals.destroyPlayer(guildId)
-            await interaction.reply('Stopped!')
+            await interaction.reply({embeds: [createThemedEmbed("Unimportant", '', 'Stopped!')]})
         } else {
-            await interaction.reply('Cannot stop the music if there is nothing playing!')
+            await interaction.reply({embeds: [createThemedEmbed("Error", 'Cannot stop the music if nothing is playing!', 'Error')]})
         }
     }
 }

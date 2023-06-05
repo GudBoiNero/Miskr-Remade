@@ -9,12 +9,10 @@ module.exports = {
         const member = await interaction.guild.members.fetch(interaction.member.id);
         const voiceState = member?.voice
 
-        await interaction.deferReply()
-
         if (!voiceState) {
-            await interaction.editReply('You must be in a voice channel!')
+            await interaction.reply('You must be in a voice channel!')
             return false
         }
-        return false
+        return true
     }
 }

@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
 const Globals = require("../globals.js");
+const createThemedEmbed = require("../util/createThemedEmbed.js");
 
 module.exports = {
     isVoiceCommand: true,
@@ -22,12 +23,21 @@ module.exports = {
         const skips = interaction.options.get('number') | 1
 
         if (guildPlayer) {
+            let skipped = 1
             for (let i = 0; i < skips; i++) {
+                skipped++
                 guildPlayer.trackFinished()
             }
-            await interaction.reply('Skipped!')
+            await interaction.reply({embeds: [
+                createThemedEmbed(
+                    "Unimportant", 
+                    '', 
+                    `Skipped${skipped > 1 ? ` ${skipped}` : ''} Track${skipped > 1 ? `s` : ''}`
+                    )
+                ]
+            })
         } else {
-            await interaction.reply('Cannot skip the music if there is nothing playing!')
+            await interaction.reply({embeds: [createThemedEmbed("Error", 'Cannot skip the music if there is nothing playing!', 'Error')]})
         }
     }
 }
