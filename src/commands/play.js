@@ -9,6 +9,7 @@ const path = require('path')
 const fs = require('fs');
 const Queue = require("../classes/Queue.js");
 const createThemedEmbed = require("../util/createThemedEmbed.js");
+const {consoleColors} = require("../util/consoleColors.js");
 
 const validVideoUrl = "https://www.youtube.com/watch?v=__id__"
 const validPlaylistUrl = "https://www.youtube.com/playlist?list=__id__"
@@ -50,7 +51,6 @@ module.exports = {
         const result = results.items[0]
 
         if (!result ? true : !result.id) {
-            console.log(results)
             return await interaction.editReply({embeds: [createThemedEmbed("Error", 'Could not find a video', 'Error')]})
         }
 
