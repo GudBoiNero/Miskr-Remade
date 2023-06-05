@@ -12,7 +12,6 @@ module.exports = {
         const guildPlayer = Globals.getPlayer(guildId)
 
         if (guildPlayer) {
-            guildPlayer.disconnect()
             Globals.destroyPlayer(guildId)
             await interaction.reply('Stopped!')
         } else {

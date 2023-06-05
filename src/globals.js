@@ -77,6 +77,7 @@ class GlobalState {
      */
     destroyPlayer(guildId) {
         if (cache.players[guildId] != undefined) {
+            cache.players[guildId].disconnect()
             delete cache.players[guildId]
         }
     }
