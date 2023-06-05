@@ -10,7 +10,7 @@ const fs = require('fs');
 const Queue = require("../classes/Queue.js");
 
 const validUrl = "https://www.youtube.com/watch?v=__id__"
-const dlPath = path.join(__dirname.replace('src\\commands', 'res'), 'dl')
+const dlPath = path.join('./', 'res/dl')
 
 module.exports = {
     data: new SlashCommandBuilder().setName('play')
