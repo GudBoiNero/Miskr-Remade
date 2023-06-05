@@ -11,6 +11,7 @@ const Queue = require("../classes/Queue.js");
 const createThemedEmbed = require("../util/createThemedEmbed.js");
 
 const validVideoUrl = "https://www.youtube.com/watch?v=__id__"
+const validPlaylistUrl = "https://www.youtube.com/playlist?list=__id__"
 const dlPath = path.join('./', 'res/dl')
 
 module.exports = {
