@@ -20,19 +20,20 @@ module.exports = {
     async execute(interaction) {
         const guildId = interaction.guildId
         const guildPlayer = Globals.getPlayer(guildId)
-        const skips = interaction.options.get('number') | 1
+        const skips = interaction.options.get('number').value | 1
 
         if (guildPlayer) {
-            let skipped = 1
+            let amtSkipped = 1
             for (let i = 0; i < skips; i++) {
-                skipped++
+                amtSkipped++
                 guildPlayer.trackFinished()
             }
+
             await interaction.reply({embeds: [
                 createThemedEmbed(
                     "Unimportant", 
                     '', 
-                    `Skipped${skipped > 1 ? ` ${skipped}` : ''} Track${skipped > 1 ? `s` : ''}`
+                    `Skipped${amtSkipped > 1 ? ` ${amtSkipped}` : ''} Track${amtSkipped > 1 ? `s` : ''}`
                     )
                 ]
             })

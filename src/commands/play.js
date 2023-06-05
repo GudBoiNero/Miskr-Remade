@@ -82,6 +82,7 @@ module.exports = {
             }
         }
 
+        // Checks if we already have the audio downloaded. IF so then just play it rather than downloading again.
         if (fs.existsSync(filePath)) {
             await cont()
         } else {

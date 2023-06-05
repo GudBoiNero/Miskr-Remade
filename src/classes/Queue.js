@@ -22,7 +22,13 @@ module.exports = class Queue {
      * @returns {Track | undefined}
      */
     nextTrack() {
-        return this.tracks.shift()
+        const track = this.tracks.shift()
+
+        if (this.options.queueLooping) {
+            this.tracks.push(track)
+        }
+
+        return track
     }
 
     /**
