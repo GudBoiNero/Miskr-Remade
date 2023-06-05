@@ -50,7 +50,11 @@ module.exports = {
                 });
                 exec(`npm i`)
                 exec(`npm rebuild`)
-                exec(`node .`)
+                exec(`node .`, (error, stderr, stdout) => {
+                    console.log(error)
+                    console.log(stderr)
+                    console.log(stdout)
+                })
                 interaction.client.destroy()
             } catch (err) {
                 await interaction.editReply({ 
