@@ -55,6 +55,7 @@ class GuildPlayer {
     } 
 
     trackFinished() {
+        if (this.destroyed) return;
         // Check if we should loop or continue to the next track
         if (!this.queue.options.looping) {
             this.currentTrack = this.queue.nextTrack()

@@ -2,6 +2,7 @@ const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
 const Globals = require("../globals.js");
 
 module.exports = {
+    isVoiceCommand: true,
     data: new SlashCommandBuilder().setName('stop')
         .setDescription('...'),
     /**

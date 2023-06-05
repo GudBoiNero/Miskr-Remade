@@ -8,11 +8,13 @@ const ytsr = require('ytsr')
 const path = require('path')
 const fs = require('fs');
 const Queue = require("../classes/Queue.js");
+const { canUseVoiceCommand } = require("../util/voice.js");
 
 const validUrl = "https://www.youtube.com/watch?v=__id__"
 const dlPath = path.join('./', 'res/dl')
 
 module.exports = {
+    isVoiceCommand: true,
     data: new SlashCommandBuilder().setName('play')
         .addStringOption(option => {
             option.setName('query')
@@ -30,13 +32,6 @@ module.exports = {
         const query = interaction.options.get('query')?.value
         const member = await interaction.guild.members.fetch(interaction.member.id);
         const voiceState = member?.voice
-
-        await interaction.deferReply()
-
-        // If the user is not in a voice channel
-        if (!voiceState) {
-            return await interaction.editReply('You must be in a voice channel!')
-        }
 
         const connection = joinVoiceChannel({
             channelId: voiceState.channelId,

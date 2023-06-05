@@ -6,6 +6,7 @@ const { Client, GatewayIntentBits, Collection, Events, REST, Routes } = require(
 const { CLIENT_TOKEN, CLIENT_ID } = require('./config.json');
 const Globals = require('./globals.js');
 const GuildPlayer = require('./classes/GuildPlayer.js');
+const { canUseVoiceCommand } = require('./util/voice.js');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] })
 
@@ -21,10 +22,10 @@ for (const file of commandFiles) {
 
 	commands.push(command.data.toJSON());
 
-	if ('data' in command && 'execute' in command) {
+	if ('data' in command && 'execute' in command && 'isVoiceCommand' in command) {
 		client.commands.set(command.data.name, command);
 	} else {
-		console.log(consoleColors.FG_RED + `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+		console.log(consoleColors.FG_RED + `[WARNING] The command at ${filePath} is missing a required "data", "execute", or "isVoiceCommand" property.`);
 	}
 }
 //#endregion
@@ -56,6 +57,12 @@ client.on(Events.InteractionCreate, async interaction => {
 	}
 
 	try {
+        if (command.isVoiceCommand) {
+			if (!canUseVoiceCommand(interaction)) {
+				return
+			};
+		};
+
 		await command.execute(interaction);
 	} catch (error) {
 		console.error(error);
