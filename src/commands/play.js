@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
-const { joinVoiceChannel, createAudioResource, StreamType, generateDependencyReport, entersState, VoiceConnectionStatus } = require('@discordjs/voice')
+const { joinVoiceChannel } = require('@discordjs/voice')
 const Globals = require("../globals.js");
 const GuildPlayer = require("../classes/GuildPlayer.js");
 const Track = require('../classes/Track.js')
@@ -8,11 +8,9 @@ const ytsr = require('ytsr')
 const path = require('path')
 const fs = require('fs');
 const Queue = require("../classes/Queue.js");
-const { canUseVoiceCommand } = require("../util/voice.js");
 const createThemedEmbed = require("../util/createThemedEmbed.js");
 
 const validVideoUrl = "https://www.youtube.com/watch?v=__id__"
-const validPlaylistUrl = "https://www.youtube.com/playlist?list=__id__"
 const dlPath = path.join('./', 'res/dl')
 
 module.exports = {
