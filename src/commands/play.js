@@ -70,8 +70,8 @@ module.exports = {
             }
 
             // Configure Globals
-            const queue = new Queue([new Track(filePath, result)])
-            const guildPlayer = new GuildPlayer(connection, guildId, queue)
+            const queue = new Queue([new Track(filePath, {result: result, channelId: interaction.channelId})])
+            const guildPlayer = new GuildPlayer(interaction.client, connection, guildId, queue)
 
             // Initialize player if it doesn't already exist
             Globals.setPlayer(guildId, guildPlayer)

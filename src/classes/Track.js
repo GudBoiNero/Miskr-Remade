@@ -1,8 +1,12 @@
 const { AudioResource } = require("@discordjs/voice")
+const ytsr = require("ytsr")
 
 class Track {
     path = ''
-    meta = undefined
+    meta = {
+        result: [],
+        channelId: 0 // Used to send data when the track is being played
+    }
 
     /**
      * 

@@ -1,6 +1,7 @@
-const { CommandInteraction } = require("discord.js");
+const { CommandInteraction, Client } = require("discord.js");
 const GuildPlayer = require("./classes/GuildPlayer");
 
+let globalClient = Client
 let instance;
 let cache = {
     players: {}
@@ -77,10 +78,8 @@ class GlobalState {
      * @param {Number} guildId 
      */
     destroyPlayer(guildId) {
-        if (Object.keys(cache.players).includes(guildId)) {
-            cache.players[guildId].disconnect()
-            delete cache.players[guildId]
-        }
+        cache.players[guildId].disconnect()
+        delete cache.players[guildId]
     }
 }
 

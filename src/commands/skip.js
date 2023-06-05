@@ -26,7 +26,7 @@ module.exports = {
             let amtSkipped = 0
             for (let i = 0; i < (skips == undefined ? 1 : skips); i++) {
                 amtSkipped++
-                guildPlayer.trackFinished()
+                await guildPlayer.trackFinished()
             }
 
             await interaction.reply({embeds: [

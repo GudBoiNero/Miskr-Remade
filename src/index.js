@@ -4,8 +4,6 @@ const path = require('node:path');
 const { consoleColors } = require('./util/consoleColors.js')
 const { Client, GatewayIntentBits, Collection, Events, REST, Routes } = require('discord.js')
 const { CLIENT_TOKEN, CLIENT_ID } = require('./config.json');
-const Globals = require('./globals.js');
-const GuildPlayer = require('./classes/GuildPlayer.js');
 const { canUseVoiceCommand } = require('./util/voice.js');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] })

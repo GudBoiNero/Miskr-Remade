@@ -1,14 +1,16 @@
-const Queue = require('./Queue.js')
 const { createAudioPlayer, VoiceConnection, NoSubscriberBehavior, createAudioResource, StreamType, AudioResource } = require('@discordjs/voice')
-const Track = require('./Track.js')
-const { CommandInteraction } = require('discord.js')
+const { CommandInteraction, Client } = require('discord.js')
 const { AUTHORIZED_USERS } = require('../config.json')
-const { emit } = require('process')
-const events = require('events')
-const Globals = require('../globals.js')
 const { consoleColors } = require('../util/consoleColors.js')
 
+const Queue = require('./Queue.js')
+const Track = require('./Track.js')
+const events = require('events')
+const Globals = require('../globals.js')
+const createThemedEmbed = require('../util/createThemedEmbed.js')
+
 class GuildPlayer {
+    client = Client
     emitter = new events.EventEmitter()
     currentTrack = Track // Changed only when we're ready to play the next resource
     currentResource = AudioResource
@@ -19,10 +21,12 @@ class GuildPlayer {
     queue = new Queue() // Used to determine what the current tracks are and what the next track is
 
     /**
+     * @param {Client} client
      * @param {VoiceConnection} connection
      * @param {Queue} queue 
      */
-    constructor(connection, guildId, queue = new Queue()) {
+    constructor(client, connection, guildId, queue = new Queue()) {
+        this.client = client
         this.guildId = guildId
         this.connection = connection
         this.queue = queue
@@ -46,12 +50,12 @@ class GuildPlayer {
             }
         });
         
-        this.player.on('stateChange', (oldState, newState) => {
+        this.player.on('stateChange', async (oldState, newState) => {
             //console.log(consoleColors.FG_RED+`Audio player transitioned from ${oldState.status} to ${newState.status}`);
             // This should be directly after a bot finishes playing and it has another track to play.
             if (newState.status == 'idle') {
                 // Check if we should loop or continue to the next track
-                this.trackFinished()
+                await this.trackFinished()
             }
         });
     }
@@ -93,7 +97,7 @@ class GuildPlayer {
         this.currentResource.volume.setVolume(vol)
     }
 
-    trackFinished() {
+    async trackFinished() {
         if (this.destroyed) return;
         // Check if we should loop or continue to the next track
         if (!this.queue.options.looping) {
