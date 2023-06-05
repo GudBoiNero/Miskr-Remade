@@ -11,7 +11,8 @@ const Queue = require("../classes/Queue.js");
 const { canUseVoiceCommand } = require("../util/voice.js");
 const createThemedEmbed = require("../util/createThemedEmbed.js");
 
-const validUrl = "https://www.youtube.com/watch?v=__id__"
+const validVideoUrl = "https://www.youtube.com/watch?v=__id__"
+const validPlaylistUrl = "https://www.youtube.com/playlist?list=__id__"
 const dlPath = path.join('./', 'res/dl')
 
 module.exports = {
@@ -49,12 +50,13 @@ module.exports = {
         
         const result = results.items[0]
 
-        if (!result ? false : !result.id) {
+        if (!result ? true : !result.id) {
+            console.log(results)
             return await interaction.editReply({embeds: [createThemedEmbed("Error", 'Could not find a video', 'Error')]})
         }
 
         const filePath = path.join(dlPath, `${result.id}.ogg`)
-        const fileUrl = validUrl.replace('__id__', result.id)
+        const fileUrl = validVideoUrl.replace('__id__', result.id)
 
         let cont = async () => {
             // If there is already a GuildPlayer with an active connection.
