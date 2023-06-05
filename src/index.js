@@ -27,7 +27,6 @@ for (const file of commandFiles) {
 		console.log(consoleColors.FG_RED + `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
 	}
 }
-
 //#endregion
 
 //#region Deleting Downloads

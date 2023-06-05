@@ -47,6 +47,8 @@ module.exports = {
 
                     await interaction.editReply({ embeds: [successEmbed] })
                 });
+                exec(`npm i`)
+                exec(`npm rebuild`)
                 exec(`node .`)
                 interaction.client.destroy()
             } catch (err) {
