@@ -2,7 +2,9 @@ const { SlashCommandBuilder, CommandInteraction, EmbedBuilder } = require('disco
 const { AUTHORIZED_USERS, GITHUB_PRIVATE_KEY, ALLOW_UPDATING } = require('../config.json')
 const { exec } = require('child_process')
 const { consoleColors } = require('../util/consoleColors')
-const { stdout, stderr } = require('process')
+const fs = require('fs')
+const Globals = require('../globals')
+const clearDlCache = require('../util/clearDlCache')
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -30,6 +32,16 @@ module.exports = {
         }
 
         if (AUTHORIZED_USERS.includes(userId)) {
+
+            const guildPlayers = Globals.getPlayers()
+            for (let index = 0; index < Object.keys(guildPlayers).length; index++) {
+                const guildId = Object.keys(guildPlayers)[index]
+                const guildPlayer = guildPlayers[guildId];
+                guildPlayer.disconnect()
+            }
+            interaction.client.destroy()
+
+            clearDlCache()
             await interaction.editReply({ embeds: [new EmbedBuilder().setTitle('Updating...').setTimestamp()] })
             try {
                 exec(`bash src/update.sh ${GITHUB_PRIVATE_KEY}`, async (error, stdout, stderr) => {
@@ -48,14 +60,11 @@ module.exports = {
 
                     await interaction.editReply({ embeds: [successEmbed] })
                 });
-                exec(`npm i`)
-                exec(`npm rebuild`)
                 exec(`node .`, (error, stderr, stdout) => {
                     console.log(error)
                     console.log(stderr)
                     console.log(stdout)
                 })
-                interaction.client.destroy()
             } catch (err) {
                 await interaction.editReply({ 
                     embeds: [new EmbedBuilder().setTitle('Update Failed!')
