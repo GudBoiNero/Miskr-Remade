@@ -5,6 +5,8 @@ const { CommandInteraction } = require('discord.js')
 const { AUTHORIZED_USERS } = require('../config.json')
 const { emit } = require('process')
 const events = require('events')
+const Globals = require('../globals.js')
+const { consoleColors } = require('../util/consoleColors.js')
 
 class GuildPlayer {
     emitter = new events.EventEmitter()
@@ -92,8 +94,6 @@ class GuildPlayer {
     }
 
     trackFinished() {
-        console.log(this.queue)
-
         if (this.destroyed) return;
         // Check if we should loop or continue to the next track
         if (!this.queue.options.looping) {
@@ -142,8 +142,10 @@ class GuildPlayer {
 
         this.currentTrack = undefined
         this.destroyed = true
-
+        
         this.emitter.emit('disconnected')
+
+        console.log(consoleColors.FG_GRAY+`GuildPlayer ${this.guildId} Disconnected.`)
     }
 }
 

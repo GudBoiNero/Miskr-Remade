@@ -57,10 +57,6 @@ class GlobalState {
         return Object.keys(cache.players).includes(guildId) ? cache.players[guildId] : undefined
     }
 
-    getPlayers() {
-        return cache.players
-    }
-
     /**
      * @param {Number} guildId
      * @param {GuildPlayer} player
@@ -72,7 +68,7 @@ class GlobalState {
 
         cache.players[guildId] = player
 
-        player.emitter.on('disconnect', () => {
+        player.emitter.on('disconnected', () => {
             this.destroyPlayer(guildId)
         })
     }
@@ -81,7 +77,7 @@ class GlobalState {
      * @param {Number} guildId 
      */
     destroyPlayer(guildId) {
-        if (cache.players[guildId] != undefined) {
+        if (Object.keys(cache.players).includes(guildId)) {
             cache.players[guildId].disconnect()
             delete cache.players[guildId]
         }
