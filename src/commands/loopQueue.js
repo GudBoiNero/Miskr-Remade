@@ -14,8 +14,8 @@ module.exports = {
         const guildPlayer = Globals.getPlayer(guildId)
 
         if (guildPlayer) {
-            const looping = guildPlayer.looping()
-            guildPlayer.loop(!looping)
+            const looping = guildPlayer.loopingQueue()
+            guildPlayer.loopQueue(!looping)
             if (!looping) {
                 await interaction.reply({embeds: [createThemedEmbed("Unimportant", '', 'Looping Queue!')]})
             } else {

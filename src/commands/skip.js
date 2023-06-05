@@ -20,11 +20,11 @@ module.exports = {
     async execute(interaction) {
         const guildId = interaction.guildId
         const guildPlayer = Globals.getPlayer(guildId)
-        const skips = interaction.options.get('number').value | 1
+        const skips = interaction.options.get('number')?.value
 
         if (guildPlayer) {
-            let amtSkipped = 1
-            for (let i = 0; i < skips; i++) {
+            let amtSkipped = 0
+            for (let i = 0; i < (skips == undefined ? 1 : skips); i++) {
                 amtSkipped++
                 guildPlayer.trackFinished()
             }

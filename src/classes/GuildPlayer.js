@@ -3,8 +3,11 @@ const { createAudioPlayer, VoiceConnection, NoSubscriberBehavior, createAudioRes
 const Track = require('./Track.js')
 const { CommandInteraction } = require('discord.js')
 const { AUTHORIZED_USERS } = require('../config.json')
+const { emit } = require('process')
+const events = require('events')
 
 class GuildPlayer {
+    emitter = new events.EventEmitter()
     currentTrack = Track // Changed only when we're ready to play the next resource
     currentResource = AudioResource
     destroyed = false // This is only changed once. It should never be set to false after being set to true
@@ -30,7 +33,7 @@ class GuildPlayer {
     async start() {
         if (this.destroyed) return;
 
-        this.currentTrack = this.queue.nextTrack()
+        this.currentTrack = this.nextTrack()
         this.playTrack()
 
         this.connection.on('stateChange', (oldState, newState) => {
@@ -49,6 +52,19 @@ class GuildPlayer {
                 this.trackFinished()
             }
         });
+    }
+
+    /**
+     * @returns {Track | undefined}
+     */
+    nextTrack() {
+        const track = this.queue.tracks.shift()
+
+        if (this.queue.options.queueLooping) {
+            this.queue.tracks.push(this.currentTrack)
+        }
+
+        return track
     }
 
     /**
@@ -76,10 +92,12 @@ class GuildPlayer {
     }
 
     trackFinished() {
+        console.log(this.queue)
+
         if (this.destroyed) return;
         // Check if we should loop or continue to the next track
         if (!this.queue.options.looping) {
-            this.currentTrack = this.queue.nextTrack()
+            this.currentTrack = this.nextTrack()
             // If it's the end of the queue and we should not loop the queue
             if (!this.currentTrack) {
                 return this.disconnect()
@@ -100,6 +118,18 @@ class GuildPlayer {
         this.queue.options.looping = looping
     }
 
+    loopingQueue() {
+        return this.queue.options.queueLooping
+    }
+
+    /**
+     * @param {boolean} looping
+     * @returns {void}
+     */
+    loopQueue(looping = true) {
+        this.queue.options.queueLooping = looping
+    }
+
     /**
      * @returns {Queue}
      */
@@ -112,6 +142,8 @@ class GuildPlayer {
 
         this.currentTrack = undefined
         this.destroyed = true
+
+        this.emitter.emit('disconnected')
     }
 }
 

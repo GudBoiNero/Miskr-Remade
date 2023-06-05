@@ -19,19 +19,6 @@ module.exports = class Queue {
     }
 
     /**
-     * @returns {Track | undefined}
-     */
-    nextTrack() {
-        const track = this.tracks.shift()
-
-        if (this.options.queueLooping) {
-            this.tracks.push(track)
-        }
-
-        return track
-    }
-
-    /**
      * @param {Track} track 
      */
     addTrack(track) {

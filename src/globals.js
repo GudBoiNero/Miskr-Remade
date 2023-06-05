@@ -69,7 +69,12 @@ class GlobalState {
         if (this.getPlayer(guildId)) {
             this.getPlayer(guildId).disconnect()
         }
+
         cache.players[guildId] = player
+
+        player.emitter.on('disconnect', () => {
+            this.destroyPlayer(guildId)
+        })
     }
 
     /**
