@@ -10,9 +10,10 @@ module.exports = {
         const voiceState = member?.voice
 
         await interaction.deferReply()
-        
+
         if (!voiceState) {
-            return await interaction.editReply('You must be in a voice channel!')
+            await interaction.editReply('You must be in a voice channel!')
+            return false
         }
         return false
     }
