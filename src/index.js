@@ -29,14 +29,7 @@ for (const file of commandFiles) {
 //#endregion
 
 //#region Deleting Downloads
-const dlPath = path.join(__dirname, '../res/dl');
-const dlFiles = fs.readdirSync(dlPath).filter(file => file.endsWith('.ogg') || file.endsWith('.webm') || file.endsWith('.wav'));
-
-for (const file of dlFiles) {
-	const filePath = path.join(dlPath, file);
-
-	fs.rmSync(filePath, {force: true})
-}
+clearDlCache()
 //#endregion
 
 client.on(Events.ClientReady, async () => {
