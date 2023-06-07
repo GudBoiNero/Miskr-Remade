@@ -22,6 +22,7 @@
     "sodium-native": "^4.0.3",
     "tweetnacl": "^1.0.3",
     "ytdl-core": "^4.11.4",
+    "ytpl": "^2.3.0",
     "ytsr": "^3.8.2"
   }
 }
