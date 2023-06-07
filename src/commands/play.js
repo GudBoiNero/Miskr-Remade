@@ -49,9 +49,9 @@ module.exports = {
         //#region video code rework
 
         // Get all video ids.
-        const videoIds = await (async() => {
-            const videoIds = []
+        const videos = await (async() => {
             // Use ytsr to determine whether or not the result is a video or playlist and grab the ids based on the res
+            const videos = []
             const results = await (async () => {try { return await ytsr(query, { "pages": 1 })} catch {}})()
             const result = results?.items[0]
 
@@ -59,25 +59,36 @@ module.exports = {
 
             let resType = result.type
             if (resType == "video") {
-                videoIds.push(result.id)
+                videos.push(result)
             } 
             else if (resType == "playlist") {
-                // Get each individual ID for each entry in a playlist
+                // Get each individual id for each entry in a playlist
                 const playlistVideos = await ytpl(results.originalQuery)
-                playlistVideos.items?.forEach(video => videoIds.push(video.id))
+                playlistVideos.items?.forEach(video => {
+                    // Get the item from the video url to ensure our `videos` are only of type `ytsr.Item`
+                    ytsr(video.url, {pages: 1}).then(result => {
+                        videos.push(result.items?.at(0))
+                    })
+                })
             }
-            return videoIds
+            return videos
         })()
 
-        if (videoIds.length === 0) {
+        if (videos.length === 0) {
             return await interaction.editReply({ embeds: [createThemedEmbed("Error", 'Could not find a video', 'Error')]})
         };
 
-        videoIds.forEach(id => {
+        videos.forEach(async (video, index) => {
+            const url = validVideoUrl.replace('__id__', video)
+            const filePath = path.join(dlPath, video.id) + '.ogg'
             // Check if we already downloaded it
-
-            // Skip downloading if we have
-            
+            if (!fs.existsSync(filePath)) {
+                ytdl(url, { filter: 'audioonly', format: 'highestaudio' }).pipe(fs.createWriteStream(filePath)).on("finish", async () => {
+                    console.log(consoleColors.FG_GRAY+`Downloaded [${video?.title}]`)
+                });
+            } else { 
+                console.log(consoleColors.FG_GRAY+`Already downloaded [${video?.title}]`)
+            }
         })
 
 
