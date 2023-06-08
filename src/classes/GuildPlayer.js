@@ -16,7 +16,7 @@ class GuildPlayer {
     currentResource = AudioResource
     destroyed = false // This is only changed once. It should never be set to false after being set to true
     guildId = 0 
-    player = createAudioPlayer({behaviors:NoSubscriberBehavior.Stop})
+    player = createAudioPlayer()
     connection = VoiceConnection // Must be set during constructur. Allows us to monitor the connection of the bot
     queue = new Queue() // Used to determine what the current tracks are and what the next track is
 
@@ -29,7 +29,7 @@ class GuildPlayer {
         this.client = client
         this.guildId = guildId
         this.connection = connection
-        this.queue = queue
+        this.queue.merge(queue)
     }
 
     /**
@@ -43,7 +43,9 @@ class GuildPlayer {
         this.playTrack()
 
         this.connection.on('stateChange', (oldState, newState) => {
-            //console.log(consoleColors.FG_GREEN+`Connection transitioned from ${oldState.status} to ${newState.status}`);
+            // DEBUG
+            //console.log(consoleColors.FG_GREEN+`Connection transitioned from ${oldState.status} to ${newState.status}`); 
+
             // This should be whenever the bot finished playing it's resource.
             if (oldState == 'ready' && newState == 'disconnected') {
                 return this.disconnect()
@@ -51,7 +53,9 @@ class GuildPlayer {
         });
         
         this.player.on('stateChange', async (oldState, newState) => {
+            // DEBUG
             //console.log(consoleColors.FG_RED+`Audio player transitioned from ${oldState.status} to ${newState.status}`);
+
             // This should be directly after a bot finishes playing and it has another track to play.
             if (newState.status == 'idle') {
                 // Check if we should loop or continue to the next track
