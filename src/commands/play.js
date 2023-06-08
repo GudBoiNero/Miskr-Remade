@@ -53,14 +53,17 @@ module.exports = {
          * @returns 
          */
         const progBar = (value, end, options = { fillchar: '█', emptychar: ' ', length: 25 }) => {
-            const percentage = (value / end) * options.length
+            const percentage = (value / end)
+            const charPercentage = percentage * options.length
             let result = ''
 
             for (let i = 0; i < options.length; i++) {
-                result += (i / options.length) * options.length <= percentage ? options.fillchar : options.emptychar
+                result += (i / options.length) * options.length <= charPercentage ? options.fillchar : options.emptychar
             }
 
-            return result
+
+
+            return '``' + result + '``' + ' ' + '``' + `${value}/${end}` + '``'
         }
 
         //#region getting video metadata
@@ -100,7 +103,8 @@ module.exports = {
 
                 for (let i = 0; i < playlistVideos.items.length; i++) {
                     const video = playlistVideos.items?.at(i);
-
+                    await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(i, playlistVideos.items?.length), `Loading Metadata!`)] })
+                    
                     // result is a backup just in case we can't find anything at first
                     let result
                     ytsr(video.shortUrl, { limit: 1 }).then(results => {
@@ -108,43 +112,10 @@ module.exports = {
                     })
 
                     videos.push(result ?? video)
-
-                    await interaction.editReply({ embeds: [createThemedEmbed("Util", '``' + progBar(i, playlistVideos.items?.length) + '``', `Downloading Video${playlistVideos.items?.length > 1 ? 's' : ''}!`)] })
                 }
                 return videos
             }
         })() ?? []
-        //#endregion
-
-        //#region download all videos and update the progress on the interaction
-        if (videos?.length === 0) {
-            return await interaction.editReply({ embeds: [createThemedEmbed("Error", 'Could not find a video or playlist!', 'Error')] })
-        } else {
-            await interaction.editReply({ embeds: [createThemedEmbed("Util", '``' + progBar(0, videos?.length) + '``', `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
-        }
-
-        let downloadedVideos = 0
-        videos.forEach(async video => {
-            const id = video?.id ?? video
-            const url = validVideoUrl.replace('__id__', id)
-            const filePath = path.join(dlPath, id) + '.ogg'
-            // Check if we already downloaded it
-            if (!fs.existsSync(filePath)) {
-                ytdl(url, { filter: 'audioonly', format: 'highestaudio' }).pipe(fs.createWriteStream(filePath)).on("finish", async () => {
-                    console.log(consoleColors.FG_GRAY + `Downloaded [${video?.title ?? url}](${url})`)
-
-                    // This if statement is meant to make sure we don't play audio that isn't fully downloaded yet
-                    if (downloadedVideos >= videos?.length) { await initPlayer() }
-                })
-            } else {
-                console.log(consoleColors.FG_GRAY + `Already downloaded [${video?.title ?? url}](${url})`)
-                if (downloadedVideos >= videos?.length) { await initPlayer() }
-            }
-
-            // Display the progress
-            downloadedVideos++
-            await interaction.editReply({ embeds: [createThemedEmbed("Util", '``' + progBar(downloadedVideos, videos?.length) + '``', `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
-        });
         //#endregion
 
         //#region initialize queue and guild player
@@ -161,72 +132,49 @@ module.exports = {
             // Check if we don't already have a player
             const oldGuildPlayer = Globals.getPlayer(guildId)
             if ((oldGuildPlayer ? oldGuildPlayer.connection != undefined : false) && !oldGuildPlayer.destroyed) {
-                oldGuildPlayer.queue.merge(queue)
-
-                // Display all tracks added to queue
-
-                return
+                oldGuildPlayer.merge(queue)
             }
-
-            const newGuildPlayer = new GuildPlayer(interaction.client, connection, guildId, queue)
-            Globals.setPlayer(guildId, newGuildPlayer)
-            await newGuildPlayer.start()
+            else {
+                const newGuildPlayer = new GuildPlayer(interaction.client, connection, guildId, queue)
+                Globals.setPlayer(guildId, newGuildPlayer)
+                await newGuildPlayer.start()
+            }
             await interaction.editReply({ embeds: [createThemedEmbed("Action", `[${videos.at(0).title}](${videos.at(0).url})`, 'Now Playing:')] })
         }
         //#endregion
 
-        /*
-        //#region old video play code
-        // Download
-        const results = await (async () => {
-            try { return await ytsr(query, { "pages": 1 })} catch {}
-        })()
-        const result = results?.items[0]
-
-        console.log(results)
-
-        if (!result ?? (!result?.id || !result?.playlistID)) {
-            return await interaction.editReply({embeds: [createThemedEmbed("Error", 'Could not find a video', 'Error')]})
-        }
-
-        const filePath = path.join(dlPath, `${result.id}.ogg`)
-        const fileUrl = validVideoUrl.replace('__id__', result.id)
-
-        const startPlayer = async () => {
-            // If there is already a GuildPlayer with an active connection.
-            // Add the track to the queue
-            const curGuildPlayer = Globals.getPlayer(guildId)
-            if ((curGuildPlayer ? curGuildPlayer.connection != undefined : false) && !curGuildPlayer.destroyed) {
-                curGuildPlayer.queue.addTrack(new Track(filePath, result))
-
-                if (!interaction.replied) {
-                    return await interaction.editReply({embeds: [createThemedEmbed("Util",`Added [${result.title}](${fileUrl}) to queue.`, 'Added to Queue')]})
-                }
-            }
-
-            // Configure Globals
-            const queue = new Queue([new Track(filePath, {result: result, channelId: interaction.channelId})])
-            const guildPlayer = new GuildPlayer(interaction.client, connection, guildId, queue)
-
-            // Initialize player if it doesn't already exist
-            Globals.setPlayer(guildId, guildPlayer)
-
-            await guildPlayer.start()
-
-            if (!interaction.replied) {
-                await interaction.editReply({embeds: [createThemedEmbed("Action", `[${result.title}](${fileUrl})`, 'Now Playing:', result.bestThumbnail.url)]})
-            }
-        }
-
-        // Checks if we already have the audio downloaded. IF so then just play it rather than downloading again.
-        if (fs.existsSync(filePath)) {
-            await startPlayer()
+        //#region download all videos and update the progress on the interaction
+        if (videos?.length === 0) {
+            return await interaction.editReply({ embeds: [createThemedEmbed("Error", 'Could not find a video or playlist!', 'Error')] })
         } else {
-            ytdl(fileUrl, { filter: 'audioonly', format: 'highestaudio' }).pipe(fs.createWriteStream(filePath)).on("finish", async () => {
-                await startPlayer()
-            });
+            await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(0, videos?.length), `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
         }
+
+        let downloadedVideos = 0
+        videos.forEach(async video => {
+            console.log(downloadedVideos, videos?.length)
+            const id = video?.id ?? video
+            const url = validVideoUrl.replace('__id__', id)
+            const filePath = path.join(dlPath, id) + '.ogg'
+            
+            await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(downloadedVideos, videos?.length), `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
+            // Check if we already downloaded it
+            if (!fs.existsSync(filePath)) {
+                ytdl(url, { filter: 'audioonly', format: 'highestaudio' }).pipe(fs.createWriteStream(filePath)).on("finish", async () => {
+                    console.log(consoleColors.FG_GRAY + `Downloaded [${video?.title ?? url}](${url})`)
+
+                    // This if statement is meant to make sure we don't play audio that isn't fully downloaded yet
+                    if (downloadedVideos >= videos?.length - 1) { await initPlayer() }
+                })
+            } else {
+                console.log(consoleColors.FG_GRAY + `Already downloaded [${video?.title ?? url}](${url})`)
+                if (downloadedVideos >= videos?.length - 1) { await initPlayer() }
+            }
+
+            // Display the progress
+            downloadedVideos++
+            
+        });
         //#endregion
-        */
     }
 }

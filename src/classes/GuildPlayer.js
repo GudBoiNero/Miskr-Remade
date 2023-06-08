@@ -85,6 +85,17 @@ class GuildPlayer {
         this.player.play(this.currentResource)
         this.connection.subscribe(this.player)
     } 
+    
+    /**
+     * Merges two queues together
+     * @param {Queue} queue
+     */
+    merge(queue) {
+        this.queue.merge(queue)
+        if (this.currentTrack.ended) {
+            this.playTrack()
+        }
+    }
 
     /**
      * Sets the volume of the currently playing resource if any.
@@ -103,6 +114,7 @@ class GuildPlayer {
 
     async trackFinished() {
         if (this.destroyed) return;
+        this.currentTrack.ended = true
         // Check if we should loop or continue to the next track
         if (!this.queue.options.looping) {
             this.currentTrack = this.nextTrack()
