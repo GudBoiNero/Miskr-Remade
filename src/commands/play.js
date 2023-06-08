@@ -46,36 +46,21 @@ module.exports = {
         if (!connection) return
 
         /**
-         * @returns {Embed}
-         * @param {Number} current 
+         * 
+         * @param {Number} value 
          * @param {Number} end 
+         * @param {{ fillchar: '█', emptychar: ' ' }} options 
+         * @returns 
          */
-        const downloadEmbed = (current, end) => {
-            const progBarLength = 25
-            const percentage = (current / end) * progBarLength
-            let res = ''
+        const progBar = (value, end, options = { fillchar: '█', emptychar: ' ', length: 25 }) => {
+            const percentage = (value / end) * options.length
+            let result = ''
 
-            for (let i = 0; i < progBarLength; i++) {
-                res += (i / progBarLength) * progBarLength <= percentage ? '█' : ' '
+            for (let i = 0; i < options.length; i++) {
+                result += (i / options.length) * options.length <= percentage ? options.fillchar : options.emptychar
             }
 
-            return createThemedEmbed("Util", '``' + res + '``', `Downloading Video${end > 1 ? 's' : ''}!`)
-        }
-        /**
-         * @returns {Embed}
-         * @param {Number} current 
-         * @param {Number} end 
-         */
-        const metaEmbed = (current, end) => {
-            const progBarLength = 25
-            const percentage = (current / end) * progBarLength
-            let res = ''
-
-            for (let i = 0; i < progBarLength; i++) {
-                res += (i / progBarLength) * progBarLength <= percentage ? '█' : ' '
-            }
-
-            return createThemedEmbed("Unimportant", '``' + res + '``', `Getting Metadata...`);
+            return result
         }
 
         //#region getting video metadata
@@ -91,8 +76,6 @@ module.exports = {
                 const results = await ytsr(query, { "pages": 1 })
                 result = results?.items[0]
 
-                console.log(result)
-
                 attempts++
 
                 if (!result) {
@@ -107,12 +90,11 @@ module.exports = {
                 return videos
             }
 
-            let resType = result.type
-            if (resType == "video") {
+            if (result.type == "video") {
                 videos.push(result)
                 return videos
             }
-            if (resType == "playlist") {
+            if (result.type == "playlist") {
                 // Get each individual id for each entry in a playlist
                 const playlistVideos = await ytpl(result.playlistID)
 
@@ -124,21 +106,21 @@ module.exports = {
                     ytsr(video.shortUrl, { limit: 1 }).then(results => {
                         result = results.items?.at(0)
                     })
-                    
+
                     videos.push(result ?? video)
 
-                    await interaction.editReply({ embeds: [metaEmbed(i, playlistVideos.items?.length)] })
+                    await interaction.editReply({ embeds: [createThemedEmbed("Util", '``' + progBar(i, playlistVideos.items?.length) + '``', `Downloading Video${playlistVideos.items?.length > 1 ? 's' : ''}!`)] })
                 }
                 return videos
             }
-        })()
+        })() ?? []
         //#endregion
 
         //#region download all videos and update the progress on the interaction
         if (videos?.length === 0) {
             return await interaction.editReply({ embeds: [createThemedEmbed("Error", 'Could not find a video or playlist!', 'Error')] })
         } else {
-            await interaction.editReply({ embeds: [downloadEmbed(0, videos?.length)] })
+            await interaction.editReply({ embeds: [createThemedEmbed("Util", '``' + progBar(0, videos?.length) + '``', `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
         }
 
         let downloadedVideos = 0
@@ -161,10 +143,10 @@ module.exports = {
 
             // Display the progress
             downloadedVideos++
-            await interaction.editReply({ embeds: [downloadEmbed(downloadedVideos, videos?.length)] })
+            await interaction.editReply({ embeds: [createThemedEmbed("Util", '``' + progBar(downloadedVideos, videos?.length) + '``', `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
         });
         //#endregion
-        
+
         //#region initialize queue and guild player
         const initPlayer = async () => {
             const tracks = []
@@ -189,7 +171,7 @@ module.exports = {
             const newGuildPlayer = new GuildPlayer(interaction.client, connection, guildId, queue)
             Globals.setPlayer(guildId, newGuildPlayer)
             await newGuildPlayer.start()
-            await interaction.editReply({embeds: [createThemedEmbed("Action", `[${videos.at(0).title}](${videos.at(0).url})`, 'Now Playing:')]})
+            await interaction.editReply({ embeds: [createThemedEmbed("Action", `[${videos.at(0).title}](${videos.at(0).url})`, 'Now Playing:')] })
         }
         //#endregion
 
