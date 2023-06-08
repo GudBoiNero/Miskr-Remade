@@ -85,13 +85,13 @@ module.exports = {
             const MAX_ATTEMPTS = 10
             const videos = []
             let result
-            let originalQuery
 
             console.log(consoleColors.FG_GRAY + `Searching for [${query}]`)
             while (!result && attempts < MAX_ATTEMPTS) {
                 const results = await ytsr(query, { "pages": 1 })
                 result = results?.items[0]
-                originalQuery = results.originalQuery
+
+                console.log(result)
 
                 attempts++
 
@@ -114,7 +114,7 @@ module.exports = {
             }
             if (resType == "playlist") {
                 // Get each individual id for each entry in a playlist
-                const playlistVideos = await ytpl(originalQuery)
+                const playlistVideos = await ytpl(result.playlistID)
 
                 for (let i = 0; i < playlistVideos.items.length; i++) {
                     const video = playlistVideos.items?.at(i);
@@ -163,7 +163,8 @@ module.exports = {
             downloadedVideos++
             await interaction.editReply({ embeds: [downloadEmbed(downloadedVideos, videos?.length)] })
         });
-
+        //#endregion
+        
         //#region initialize queue and guild player
         const initPlayer = async () => {
             const tracks = []
@@ -190,33 +191,7 @@ module.exports = {
             await newGuildPlayer.start()
             await interaction.editReply({embeds: [createThemedEmbed("Action", `[${videos.at(0).title}](${videos.at(0).url})`, 'Now Playing:')]})
         }
-
-
         //#endregion
-
-        //#endregion
-
-        /**let dlVideos = 0
-        for (let index = 0; index < videos.length; index++) {
-            const video = videos[index];
-            const id = video?.id ?? video
-            const url = validVideoUrl.replace('__id__', id)
-            const filePath = path.join(dlPath, id) + '.ogg'
-            // Check if we already downloaded it
-            if (!fs.existsSync(filePath)) {
-                ytdl(url, { filter: 'audioonly', format: 'highestaudio' }).pipe(fs.createWriteStream(filePath)).on("finish", async () => {
-                    console.log(consoleColors.FG_GRAY+`Downloaded [${video?.title ?? url}](${url})`)
-                });
-            } else { 
-                console.log(consoleColors.FG_GRAY+`Already downloaded [${video?.title ?? url}](${url})`)
-            }
-
-            // Display the progress
-            dlVideos++
-            await interaction.editReply({embeds: [downloadEmbed(dlVideos, videos?.length)]})
-            
-        }*/
-
 
         /*
         //#region old video play code
