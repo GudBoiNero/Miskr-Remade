@@ -119,13 +119,13 @@ module.exports = {
                 for (let i = 0; i < playlistVideos.items.length; i++) {
                     const video = playlistVideos.items?.at(i);
 
+                    // result is a backup just in case we can't find anything at first
                     let result
-                    if (!video) {
-                        const results = await ytsr(video.shortUrl, { limit: 1 })
+                    ytsr(video.shortUrl, { limit: 1 }).then(results => {
                         result = results.items?.at(0)
-                    }
+                    })
                     
-                    videos.push(video ?? result)
+                    videos.push(result ?? video)
 
                     await interaction.editReply({ embeds: [metaEmbed(i, playlistVideos.items?.length)] })
                 }
@@ -188,8 +188,7 @@ module.exports = {
             const newGuildPlayer = new GuildPlayer(interaction.client, connection, guildId, queue)
             Globals.setPlayer(guildId, newGuildPlayer)
             await newGuildPlayer.start()
-
-            await interaction.editReply({embeds: [createThemedEmbed("Action", `[${newGuildPlayer.currentTrack.meta.result.title}](${newGuildPlayer.currentTrack.meta.result.shortUrl})`, 'Now Playing:', result.bestThumbnail.url)]})
+            await interaction.editReply({embeds: [createThemedEmbed("Action", `[${videos.at(0).title}](${videos.at(0).url})`, 'Now Playing:')]})
         }
 
 
