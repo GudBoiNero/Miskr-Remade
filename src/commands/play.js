@@ -118,10 +118,14 @@ module.exports = {
 
                 for (let i = 0; i < playlistVideos.items.length; i++) {
                     const video = playlistVideos.items?.at(i);
-                    const results = await ytsr(video.shortUrl, { limit: 1 })
-                    const result = results.items?.at(0)
 
-                    videos.push(result ?? video)
+                    let result
+                    if (!video) {
+                        const results = await ytsr(video.shortUrl, { limit: 1 })
+                        result = results.items?.at(0)
+                    }
+                    
+                    videos.push(video ?? result)
 
                     await interaction.editReply({ embeds: [metaEmbed(i, playlistVideos.items?.length)] })
                 }
@@ -146,11 +150,13 @@ module.exports = {
             if (!fs.existsSync(filePath)) {
                 ytdl(url, { filter: 'audioonly', format: 'highestaudio' }).pipe(fs.createWriteStream(filePath)).on("finish", async () => {
                     console.log(consoleColors.FG_GRAY + `Downloaded [${video?.title ?? url}](${url})`)
-                    if (downloadedVideos >= videos?.length) { initPlayer() }
+
+                    // This if statement is meant to make sure we don't play audio that isn't fully downloaded yet
+                    if (downloadedVideos >= videos?.length) { await initPlayer() }
                 })
             } else {
                 console.log(consoleColors.FG_GRAY + `Already downloaded [${video?.title ?? url}](${url})`)
-                if (downloadedVideos >= videos?.length) { initPlayer() }
+                if (downloadedVideos >= videos?.length) { await initPlayer() }
             }
 
             // Display the progress
@@ -159,7 +165,7 @@ module.exports = {
         });
 
         //#region initialize queue and guild player
-        const initPlayer = () => {
+        const initPlayer = async () => {
             const tracks = []
             for (let index = 0; index < videos.length; index++) {
                 const video = videos[index];
@@ -181,7 +187,9 @@ module.exports = {
 
             const newGuildPlayer = new GuildPlayer(interaction.client, connection, guildId, queue)
             Globals.setPlayer(guildId, newGuildPlayer)
-            newGuildPlayer.start()
+            await newGuildPlayer.start()
+
+            await interaction.editReply({embeds: [createThemedEmbed("Action", `[${newGuildPlayer.currentTrack.meta.result.title}](${newGuildPlayer.currentTrack.meta.result.shortUrl})`, 'Now Playing:', result.bestThumbnail.url)]})
         }
 
 
