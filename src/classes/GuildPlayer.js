@@ -82,8 +82,8 @@ class GuildPlayer {
      */
     playTrack() {
         this.currentResource = createAudioResource(this.currentTrack.path, { inputType: StreamType.OggOpus, inlineVolume: true })
-        this.connection.subscribe(this.player)
         this.player.play(this.currentResource)
+        this.connection.subscribe(this.player)
     } 
 
     /**

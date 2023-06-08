@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, CommandInteraction, Embed, EmbedBuilder } = require("discord.js");
-const { joinVoiceChannel } = require('@discordjs/voice')
+const { joinVoiceChannel, generateDependencyReport } = require('@discordjs/voice')
 const Globals = require("../globals.js");
 const GuildPlayer = require("../classes/GuildPlayer.js");
 const Track = require('../classes/Track.js')
@@ -10,7 +10,7 @@ const path = require('path')
 const fs = require('fs');
 const Queue = require("../classes/Queue.js");
 const createThemedEmbed = require("../util/createThemedEmbed.js");
-const {consoleColors} = require("../util/consoleColors.js");
+const { consoleColors } = require("../util/consoleColors.js");
 
 const validVideoUrl = "https://www.youtube.com/watch?v=__id__"
 const dlPath = path.join('./', 'res/dl')
@@ -54,13 +54,13 @@ module.exports = {
             const progBarLength = 25
             const percentage = (current / end) * progBarLength
             let res = ''
-            
+
             for (let i = 0; i < progBarLength; i++) {
                 res += (i / progBarLength) * progBarLength <= percentage ? '█' : ' '
             }
 
             return createThemedEmbed("Util", '``' + res + '``', `Downloading Video${end > 1 ? 's' : ''}!`)
-        }    
+        }
         /**
          * @returns {Embed}
          * @param {Number} current 
@@ -70,7 +70,7 @@ module.exports = {
             const progBarLength = 25
             const percentage = (current / end) * progBarLength
             let res = ''
-            
+
             for (let i = 0; i < progBarLength; i++) {
                 res += (i / progBarLength) * progBarLength <= percentage ? '█' : ' '
             }
@@ -79,7 +79,7 @@ module.exports = {
         }
 
         //#region getting video metadata
-        const videos = await (async() => {
+        const videos = await (async () => {
             // Use ytsr to determine whether or not the result is a video or playlist and grab the ids based on the res
             let attempts = 0
             const MAX_ATTEMPTS = 10
@@ -87,7 +87,7 @@ module.exports = {
             let result
             let originalQuery
 
-            console.log(consoleColors.FG_GRAY+`Searching for [${query}]`)
+            console.log(consoleColors.FG_GRAY + `Searching for [${query}]`)
             while (!result && attempts < MAX_ATTEMPTS) {
                 const results = await ytsr(query, { "pages": 1 })
                 result = results?.items[0]
@@ -96,14 +96,14 @@ module.exports = {
                 attempts++
 
                 if (!result) {
-                    console.log(consoleColors.FG_GRAY+`Retrying...`)
+                    console.log(consoleColors.FG_GRAY + `Retrying...`)
                 } else {
-                    console.log(consoleColors.FG_GRAY+`Found query in ${attempts} attempt${attempts > 1 ? 's' : ''}!`)
+                    console.log(consoleColors.FG_GRAY + `Found query in ${attempts} attempt${attempts > 1 ? 's' : ''}!`)
                 }
             }
 
             if (!result) {
-                console.log(consoleColors.FG_GRAY+`Could not find [${query}]`)
+                console.log(consoleColors.FG_GRAY + `Could not find [${query}]`)
                 return videos
             }
 
@@ -111,19 +111,19 @@ module.exports = {
             if (resType == "video") {
                 videos.push(result)
                 return videos
-            } 
+            }
             if (resType == "playlist") {
                 // Get each individual id for each entry in a playlist
                 const playlistVideos = await ytpl(originalQuery)
 
                 for (let i = 0; i < playlistVideos.items.length; i++) {
-                    const video = playlistVideos.items?.at(i); 
-                    const results = await ytsr(video.shortUrl, {limit: 1})
+                    const video = playlistVideos.items?.at(i);
+                    const results = await ytsr(video.shortUrl, { limit: 1 })
                     const result = results.items?.at(0)
-                    
+
                     videos.push(result ?? video)
 
-                    await interaction.editReply({embeds: [metaEmbed(i, playlistVideos.items?.length)]})
+                    await interaction.editReply({ embeds: [metaEmbed(i, playlistVideos.items?.length)] })
                 }
                 return videos
             }
@@ -132,12 +132,64 @@ module.exports = {
 
         //#region download all videos and update the progress on the interaction
         if (videos?.length === 0) {
-            return await interaction.editReply({ embeds: [createThemedEmbed("Error", 'Could not find a video or playlist!', 'Error')]})
+            return await interaction.editReply({ embeds: [createThemedEmbed("Error", 'Could not find a video or playlist!', 'Error')] })
         } else {
-            await interaction.editReply({embeds: [downloadEmbed(0, videos?.length)]})
+            await interaction.editReply({ embeds: [downloadEmbed(0, videos?.length)] })
         }
 
-        let downloaded = 0
+        let downloadedVideos = 0
+        videos.forEach(async video => {
+            const id = video?.id ?? video
+            const url = validVideoUrl.replace('__id__', id)
+            const filePath = path.join(dlPath, id) + '.ogg'
+            // Check if we already downloaded it
+            if (!fs.existsSync(filePath)) {
+                ytdl(url, { filter: 'audioonly', format: 'highestaudio' }).pipe(fs.createWriteStream(filePath)).on("finish", async () => {
+                    console.log(consoleColors.FG_GRAY + `Downloaded [${video?.title ?? url}](${url})`)
+                    if (downloadedVideos >= videos?.length) { initPlayer() }
+                })
+            } else {
+                console.log(consoleColors.FG_GRAY + `Already downloaded [${video?.title ?? url}](${url})`)
+                if (downloadedVideos >= videos?.length) { initPlayer() }
+            }
+
+            // Display the progress
+            downloadedVideos++
+            await interaction.editReply({ embeds: [downloadEmbed(downloadedVideos, videos?.length)] })
+        });
+
+        //#region initialize queue and guild player
+        const initPlayer = () => {
+            const tracks = []
+            for (let index = 0; index < videos.length; index++) {
+                const video = videos[index];
+                const filePath = path.join(dlPath, video.id + '.ogg')
+                const track = new Track(filePath, { result: video, channelId: interaction.channelId })
+                tracks.push(track)
+            }
+            const queue = new Queue(tracks)
+
+            // Check if we don't already have a player
+            const oldGuildPlayer = Globals.getPlayer(guildId)
+            if ((oldGuildPlayer ? oldGuildPlayer.connection != undefined : false) && !oldGuildPlayer.destroyed) {
+                oldGuildPlayer.queue.merge(queue)
+
+                // Display all tracks added to queue
+
+                return
+            }
+
+            const newGuildPlayer = new GuildPlayer(interaction.client, connection, guildId, queue)
+            Globals.setPlayer(guildId, newGuildPlayer)
+            newGuildPlayer.start()
+        }
+
+
+        //#endregion
+
+        //#endregion
+
+        /**let dlVideos = 0
         for (let index = 0; index < videos.length; index++) {
             const video = videos[index];
             const id = video?.id ?? video
@@ -153,36 +205,11 @@ module.exports = {
             }
 
             // Display the progress
-            downloaded++
-            await interaction.editReply({embeds: [downloadEmbed(downloaded, videos?.length)]})
-        }
-        //#endregion
-        
-        //#region initialize queue and guild player
-        const tracks = []
-        for (let index = 0; index < videos.length; index++) {
-            const video = videos[index];
-            const filePath = path.join(dlPath, video.id+'.ogg')
-            const track = new Track(filePath, {result: video, channelId: interaction.channelId})
-            tracks.push(track)
-        }
-        const queue = new Queue(tracks)
+            dlVideos++
+            await interaction.editReply({embeds: [downloadEmbed(dlVideos, videos?.length)]})
+            
+        }*/
 
-        // Check if we don't already have a player
-        const oldGuildPlayer = Globals.getPlayer(guildId)
-        if ((oldGuildPlayer ? oldGuildPlayer.connection != undefined : false) && !oldGuildPlayer.destroyed) {
-            oldGuildPlayer.queue.merge(queue)
-
-            // Display all tracks added to queue
-
-            return
-        }
-
-        const newGuildPlayer = new GuildPlayer(interaction.client, connection, guildId, queue)
-        Globals.setPlayer(guildId, newGuildPlayer)
-        newGuildPlayer.start()
-
-        //#endregion
 
         /*
         //#region old video play code
