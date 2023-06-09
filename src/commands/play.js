@@ -152,7 +152,6 @@ module.exports = {
 
         let downloadedVideos = 0
         videos.forEach(async video => {
-            console.log(downloadedVideos, videos?.length)
             const id = video?.id ?? video
             const url = validVideoUrl.replace('__id__', id)
             const filePath = path.join(dlPath, id) + '.ogg'
