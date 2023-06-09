@@ -25,6 +25,16 @@ module.exports = class Queue {
         this.tracks.push(track)
     }
 
+    /**
+     * @param {Queue} queue 
+     */
+    merge(queue) {
+        for (let index = 0; index < queue.tracks.length; index++) {
+            const track = queue.tracks[index];
+            this.addTrack(track)
+        }
+    }
+
     reset = () => this.tracks.slice(0, this.tracks.length - 1);
 }
 

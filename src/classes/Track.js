@@ -7,6 +7,7 @@ class Track {
         result: [],
         channelId: 0 // Used to send data when the track is being played
     }
+    ended = true
 
     /**
      * 
@@ -15,6 +16,7 @@ class Track {
     constructor(path, meta) {
         this.path = path
         this.meta = meta
+        this.ended = false
     }
 }
 

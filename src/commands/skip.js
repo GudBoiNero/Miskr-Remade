@@ -23,6 +23,8 @@ module.exports = {
         const skips = interaction.options.get('number')?.value
 
         if (guildPlayer) {
+            guildPlayer.loop(false)
+            guildPlayer.loopQueue(false)
             let amtSkipped = 0
             for (let i = 0; i < (skips == undefined ? 1 : skips); i++) {
                 amtSkipped++

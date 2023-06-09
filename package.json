@@ -12,6 +12,7 @@
     "@discordjs/opus": "^0.9.0",
     "@discordjs/voice": "^0.16.0",
     "avconv": "^3.1.0",
+    "config": "^3.3.9",
     "discord.js": "^14.11.0",
     "ffmpeg": "^0.0.4",
     "ffmpeg-static": "^5.1.0",
@@ -22,6 +23,7 @@
     "sodium-native": "^4.0.3",
     "tweetnacl": "^1.0.3",
     "ytdl-core": "^4.11.4",
+    "ytpl": "^2.3.0",
     "ytsr": "^3.8.2"
   }
 }
