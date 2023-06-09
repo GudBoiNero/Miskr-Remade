@@ -48,13 +48,9 @@ client.on(Events.InteractionCreate, async interaction => {
 	}
 
 	try {
-        if (command.isVoiceCommand) {
-			if (!canUseVoiceCommand(interaction)) {
-				return
-			};
+		if ((command.isVoiceCommand && await canUseVoiceCommand(interaction)) || !command.isVoiceCommand) {
+			await command.execute(interaction);
 		};
-
-		await command.execute(interaction);
 	} catch (error) {
 		console.error(error);
 		if (interaction.replied || interaction.deferred) {
