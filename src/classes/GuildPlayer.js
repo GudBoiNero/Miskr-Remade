@@ -156,6 +156,8 @@ class GuildPlayer {
      */
     disconnect() {
         if (this.destroyed) return;
+        
+        console.log(consoleColors.FG_YELLOW+`Destroying GuildPlayer[${this.guildId}]!`)
 
         console.log(consoleColors.FG_GRAY+`Destroying GuildPlayer[${this.guildId}]...`)
 
