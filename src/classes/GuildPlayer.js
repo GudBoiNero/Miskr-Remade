@@ -45,7 +45,7 @@ class GuildPlayer {
 
         this.connection.on('stateChange', (oldState, newState) => {
             // DEBUG
-            console.log(consoleColors.FG_YELLOW+`Connection transitioned from ${oldState.status} to ${newState.status}`); 
+            // console.log(consoleColors.FG_YELLOW+`Connection transitioned from ${oldState.status} to ${newState.status}`); 
 
             // This should be whenever the bot finished playing it's resource.
             if (oldState.status == 'ready' && newState.status == 'disconnected') {
@@ -56,7 +56,7 @@ class GuildPlayer {
 
         this.player.on('stateChange', async (oldState, newState) => {
             // DEBUG
-            //console.log(consoleColors.FG_RED+`Audio player transitioned from ${oldState.status} to ${newState.status}`);
+            // console.log(consoleColors.FG_RED+`Audio player transitioned from ${oldState.status} to ${newState.status}`);
 
             // This should be directly after a bot finishes playing and it has another track to play.
             if (newState.status == 'idle') {
@@ -156,7 +156,7 @@ class GuildPlayer {
      */
     disconnect() {
         if (this.destroyed) return;
-        
+
         console.log(consoleColors.FG_YELLOW+`Destroying GuildPlayer[${this.guildId}]!`)
 
         this.queue.reset()
