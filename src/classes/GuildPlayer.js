@@ -15,10 +15,11 @@ class GuildPlayer {
     currentTrack = Track // Changed only when we're ready to play the next resource
     currentResource = AudioResource
     destroyed = false // This is only changed once. It should never be set to false after being set to true
-    guildId = 0 
+    guildId = 0
     player = createAudioPlayer()
     connection = VoiceConnection // Must be set during constructur. Allows us to monitor the connection of the bot
     queue = new Queue() // Used to determine what the current tracks are and what the next track is
+    volume = 1.0
 
     /**
      * @param {Client} client
@@ -51,7 +52,7 @@ class GuildPlayer {
                 return this.disconnect()
             }
         });
-        
+
         this.player.on('stateChange', async (oldState, newState) => {
             // DEBUG
             //console.log(consoleColors.FG_RED+`Audio player transitioned from ${oldState.status} to ${newState.status}`);
@@ -82,10 +83,11 @@ class GuildPlayer {
      */
     playTrack() {
         this.currentResource = createAudioResource(this.currentTrack.path, { inputType: StreamType.OggOpus, inlineVolume: true })
+        this.currentResource.volume.setVolume(this.volume)
         this.player.play(this.currentResource)
         this.connection.subscribe(this.player)
-    } 
-    
+    }
+
     /**
      * Merges two queues together
      * @param {Queue} queue
@@ -99,17 +101,15 @@ class GuildPlayer {
 
     /**
      * Sets the volume of the currently playing resource if any.
-     * @param {Number} vol 
+     * @param {Number} volume 
      * @param {CommandInteraction} interaction 
      */
-    setVolume(vol, interaction) {
+    setVolume(volume, interaction) {
         const member = interaction.member
 
-        if (!member.id in AUTHORIZED_USERS) {
-            vol = Math.min(1, Math.max(0, vol))
-        }
+        this.volume = Math.min(1, Math.max(0, volume))
 
-        this.currentResource.volume.setVolume(vol)
+        this.currentResource.volume.setVolume(this.volume)
     }
 
     async trackFinished() {
@@ -162,10 +162,10 @@ class GuildPlayer {
 
         this.currentTrack = undefined
         this.destroyed = true
-        
+
         this.emitter.emit('disconnected')
 
-        console.log(consoleColors.FG_GRAY+`GuildPlayer ${this.guildId} Disconnected.`)
+        console.log(consoleColors.FG_GRAY + `GuildPlayer ${this.guildId} Disconnected.`)
     }
 }
 
