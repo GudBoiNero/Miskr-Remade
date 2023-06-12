@@ -153,7 +153,7 @@ module.exports = {
             const id = video?.id ?? video
             const url = validVideoUrl.replace('__id__', id)
             const filePath = path.join(dlPath, id) + '.ogg'
-            
+
             // Check if we already downloaded it
             if (!fs.existsSync(filePath)) {
                 const download = ytdl(url, { filter: 'audioonly', format: 'highestaudio' })
@@ -170,10 +170,12 @@ module.exports = {
                 if (downloadedVideos >= videos?.length - 1) { await initPlayer() }
             }
             
-
             // Display the progress
             downloadedVideos++
-            await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(downloadedVideos, videos?.length), `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
+            // Prevent the message from showing up AFTER the last file is downloaded
+            if (downloadedVideos < videos?.length - 1) {
+                await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(downloadedVideos, videos?.length), `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
+            }
         });
         //#endregion
     }

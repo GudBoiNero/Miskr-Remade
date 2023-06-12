@@ -45,12 +45,13 @@ class GuildPlayer {
 
         this.connection.on('stateChange', (oldState, newState) => {
             // DEBUG
-            //console.log(consoleColors.FG_GREEN+`Connection transitioned from ${oldState.status} to ${newState.status}`); 
+            console.log(consoleColors.FG_YELLOW+`Connection transitioned from ${oldState.status} to ${newState.status}`); 
 
             // This should be whenever the bot finished playing it's resource.
-            if (oldState == 'ready' && newState == 'disconnected') {
+            if (oldState.status == 'ready' && newState.status == 'disconnected') {
                 return this.disconnect()
-            }
+            } 
+            
         });
 
         this.player.on('stateChange', async (oldState, newState) => {
@@ -155,6 +156,8 @@ class GuildPlayer {
      */
     disconnect() {
         if (this.destroyed) return;
+        
+        console.log(consoleColors.FG_YELLOW+`Destroying GuildPlayer[${this.guildId}]!`)
 
         this.queue.reset()
         this.player.stop();
@@ -164,8 +167,6 @@ class GuildPlayer {
         this.destroyed = true
 
         this.emitter.emit('disconnected')
-
-        console.log(consoleColors.FG_GRAY + `GuildPlayer ${this.guildId} Disconnected.`)
     }
 }
 
