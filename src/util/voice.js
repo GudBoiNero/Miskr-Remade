@@ -18,8 +18,6 @@ module.exports = {
         const voiceState = member?.voice;
         let canUse = true;
 
-        console.log(interaction.guild.members.me.voice.channel);
-        console.log(voiceState.channel);
         if (
             !voiceState.channel ||
             !voiceState?.guild?.id == interaction.guild.id
