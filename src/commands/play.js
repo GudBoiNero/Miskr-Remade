@@ -121,6 +121,7 @@ module.exports = {
             const tracks = []
             for (let index = 0; index < videos.length; index++) {
                 const video = videos[index];
+                console.log(video.id)
                 const filePath = path.join(dlPath, video.id + '.ogg')
                 const track = new Track(filePath, { result: video, channelId: interaction.channelId })
                 tracks.push(track)
@@ -148,34 +149,26 @@ module.exports = {
             await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(0, videos?.length), `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
         }
 
-        let downloadedVideos = 0
-        videos.forEach(async video => {
+        const downloads = videos.map((video) => new Promise(async (resolve, reject) => {
             const id = video?.id ?? video
             const url = validVideoUrl.replace('__id__', id)
             const filePath = path.join(dlPath, id) + '.ogg'
-            // Check if we already downloaded it
-            if (!fs.existsSync(filePath)) {
-                const download = ytdl(url, { filter: 'audioonly', format: 'highestaudio' })
-                const pipe = download.pipe(fs.createWriteStream(filePath))
 
-                pipe.on("finish", async () => {
-                    console.log(consoleColors.FG_GRAY + `Downloaded [${video?.title ?? url}](${url})`)
+            if (fs.existsSync(filePath)) return resolve;
 
-                    // This if statement is meant to make sure we don't play audio that isn't fully downloaded yet
-                    if (downloadedVideos >= videos?.length - 1) { await initPlayer() }
-                })
-            } else {
-                console.log(consoleColors.FG_GRAY + `Already downloaded [${video?.title ?? url}](${url})`)
-                if (downloadedVideos >= videos?.length - 1) { await initPlayer() }
-            }
+            const download = ytdl(url, { filter: 'audioonly', format: 'highestaudio' })
+            const pipe = download.pipe(fs.createWriteStream(filePath))
             
-            // Display the progress
-            downloadedVideos++
-            // Prevent the message from showing up AFTER the last file is downloaded
-            if (downloadedVideos < videos?.length - 1) {
-                await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(downloadedVideos, videos?.length), `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
-            }
-        });
+            pipe.on("finish", async () => {
+                console.log(consoleColors.FG_GRAY + `Downloaded [${video?.title ?? url}](${url})`)
+                //await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(0, videos?.length), `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
+            })
+
+            pipe.on("close", resolve)
+        }))
+    
+        Promise.all(downloads).then(async () => { await initPlayer() });
+
         //#endregion
     }
 }

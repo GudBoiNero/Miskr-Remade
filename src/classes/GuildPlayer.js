@@ -51,7 +51,6 @@ class GuildPlayer {
             if (oldState.status == 'ready' && newState.status == 'disconnected') {
                 return this.disconnect()
             } 
-            
         });
 
         this.player.on('stateChange', async (oldState, newState) => {
