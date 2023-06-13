@@ -25,31 +25,6 @@ class GlobalState {
     }
 
     /**
-     * @param {CommandInteraction} interaction 
-     * @returns {boolean}
-     */
-    async senseChecks(interaction) {
-        const guildId = interaction.guildId
-        const guildPlayer = this.getPlayer(guildId)
-
-        const member = await interaction.guild.members.fetch(interaction.member.id);
-        const voiceState = member?.voice
-
-        // If the user is not in a voice channel
-        if (!voiceState) {
-            await interaction.reply('You must be in a voice channel!')
-        }
-
-        // If there is no active player
-        if (!guildPlayer) {
-            await interaction.reply('There is no active guild player!')
-            return false
-        } 
-
-        return true
-    }
-
-    /**
      * 
      * @param {Number} guildId 
      * @returns {GuildPlayer | undefined}

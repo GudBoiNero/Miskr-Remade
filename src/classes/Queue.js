@@ -1,7 +1,7 @@
 const Track = require('./Track.js')
 
 module.exports = class Queue {
-    tracks = []
+    tracks = [Track]
     options = {
         looping: false,
         queueLooping: false

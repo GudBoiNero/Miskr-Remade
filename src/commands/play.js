@@ -35,7 +35,7 @@ module.exports = {
         const member = await interaction.guild.members.fetch(interaction.member.id);
         const voiceState = member?.voice
 
-        interaction.deferReply()
+        await interaction.deferReply()
 
         const connection = joinVoiceChannel({
             channelId: voiceState.channelId,
@@ -49,7 +49,6 @@ module.exports = {
          * 
          * @param {Number} value 
          * @param {Number} end 
-         * @param {{ fillchar: '█', emptychar: ' ' }} options 
          * @returns 
          */
         const progBar = (value, end, options = { fillchar: '█', emptychar: ' ', length: 25 }) => {
@@ -102,7 +101,7 @@ module.exports = {
                 for (let i = 0; i < playlistVideos.items.length; i++) {
                     const video = playlistVideos.items?.at(i);
                     await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(i, playlistVideos.items?.length), `Loading Metadata!`)] })
-                    
+
                     // result is a backup just in case we can't find anything at first
                     let result
                     ytsr(video.shortUrl, { limit: 1 }).then(results => {
@@ -121,12 +120,12 @@ module.exports = {
             const tracks = []
             for (let index = 0; index < videos.length; index++) {
                 const video = videos[index];
-                console.log(video.id)
                 const filePath = path.join(dlPath, video.id + '.ogg')
                 const track = new Track(filePath, { result: video, channelId: interaction.channelId })
                 tracks.push(track)
             }
             const queue = new Queue(tracks)
+            console.log(consoleColors.FG_GRAY + 'Running Queue...')
 
             // Check if we don't already have a player
             const oldGuildPlayer = Globals.getPlayer(guildId)
@@ -149,25 +148,29 @@ module.exports = {
             await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(0, videos?.length), `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
         }
 
-        const downloads = videos.map((video) => new Promise(async (resolve, reject) => {
-            const id = video?.id ?? video
-            const url = validVideoUrl.replace('__id__', id)
-            const filePath = path.join(dlPath, id) + '.ogg'
+        let finished = 0;
+        const downloads = videos.map(
+            (video) => new Promise(async (resolve, reject) => {
+                const id = video?.id ?? video
+                const url = validVideoUrl.replace('__id__', id)
+                const filePath = path.join(dlPath, id) + '.ogg'
 
-            if (fs.existsSync(filePath)) return resolve;
+                if (fs.existsSync(filePath)) return resolve;
 
-            const download = ytdl(url, { filter: 'audioonly', format: 'highestaudio' })
-            const pipe = download.pipe(fs.createWriteStream(filePath))
-            
-            pipe.on("finish", async () => {
-                console.log(consoleColors.FG_GRAY + `Downloaded [${video?.title ?? url}](${url})`)
-                //await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(0, videos?.length), `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
-            })
+                const download = ytdl(url, { filter: 'audioonly', format: 'highestaudio' })
+                const pipe = download.pipe(fs.createWriteStream(filePath))
 
-            pipe.on("close", resolve)
-        }))
-    
-        Promise.all(downloads).then(async () => { await initPlayer() });
+                pipe.on("finish", async () => {
+                    finished++
+                    console.log(consoleColors.FG_GRAY + `Downloaded [${video?.title ?? url}](${url})`)
+                    await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(finished, videos?.length), `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
+                })
+
+                pipe.on("close", () => {download.destroy()})
+                pipe.on("close", resolve)
+            }))
+
+        await Promise.all(downloads).then(async () => { await initPlayer() });
 
         //#endregion
     }
