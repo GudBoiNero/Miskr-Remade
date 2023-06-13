@@ -50,7 +50,7 @@ class GuildPlayer {
             // This should be whenever the bot finished playing it's resource.
             if (oldState.status == 'ready' && newState.status == 'disconnected') {
                 return this.disconnect()
-            } 
+            }
         });
 
         this.player.on('stateChange', async (oldState, newState) => {
@@ -104,11 +104,8 @@ class GuildPlayer {
      * @param {Number} volume 
      * @param {CommandInteraction} interaction 
      */
-    setVolume(volume, interaction) {
-        const member = interaction.member
-
+    setVolume(volume) {
         this.volume = Math.min(1, Math.max(0, volume))
-
         this.currentResource.volume.setVolume(this.volume)
     }
 
@@ -156,9 +153,9 @@ class GuildPlayer {
     disconnect() {
         if (this.destroyed) return;
 
-        console.log(consoleColors.FG_GRAY+`Destroying GuildPlayer[${this.guildId}]...`)
+        console.log(consoleColors.FG_GRAY + `Destroying GuildPlayer[${this.guildId}]...`)
 
-        console.log(consoleColors.FG_GRAY+`Destroying GuildPlayer[${this.guildId}]...`)
+        console.log(consoleColors.FG_GRAY + `Destroying GuildPlayer[${this.guildId}]...`)
 
         this.queue.reset()
         this.player.stop();
@@ -168,7 +165,7 @@ class GuildPlayer {
         this.destroyed = true
 
         this.emitter.emit('disconnected')
-        console.log(consoleColors.FG_YELLOW+`Succesfully Destroyed GuildPlayer[${this.guildId}]!`)
+        console.log(consoleColors.FG_YELLOW + `Succesfully Destroyed GuildPlayer[${this.guildId}]!`)
     }
 }
 

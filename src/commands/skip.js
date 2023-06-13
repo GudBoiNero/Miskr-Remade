@@ -24,23 +24,23 @@ module.exports = {
 
         if (guildPlayer) {
             guildPlayer.loop(false)
-            guildPlayer.loopQueue(false)
             let amtSkipped = 0
             for (let i = 0; i < (skips == undefined ? 1 : skips); i++) {
                 amtSkipped++
                 await guildPlayer.trackFinished()
             }
 
-            await interaction.reply({embeds: [
-                createThemedEmbed(
-                    "Unimportant", 
-                    '', 
-                    `Skipped${amtSkipped > 1 ? ` ${amtSkipped}` : ''} Track${amtSkipped > 1 ? `s` : ''}`
+            await interaction.reply({
+                embeds: [
+                    createThemedEmbed(
+                        "Unimportant",
+                        '',
+                        `Skipped${amtSkipped > 1 ? ` ${amtSkipped}` : ''} Track${amtSkipped > 1 ? `s` : ''}`
                     )
                 ]
             })
         } else {
-            await interaction.reply({embeds: [createThemedEmbed("Error", 'Cannot skip the music if there is nothing playing!', 'Error')]})
+            await interaction.reply({ embeds: [createThemedEmbed("Error", 'Cannot skip the music if there is nothing playing!', 'Error')] })
         }
     }
 }
