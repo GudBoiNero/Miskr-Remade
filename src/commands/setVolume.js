@@ -1,7 +1,6 @@
 const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
 const Globals = require("../globals.js");
 const createThemedEmbed = require("../util/createThemedEmbed.js");
-const { AUTHORIZED_USERS } = require('../config.json')
 
 module.exports = {
     isVoiceCommand: true,
@@ -25,13 +24,8 @@ module.exports = {
         const vol = interaction.options.get('value')?.value
 
         if (guildPlayer) {
-            if (!interaction.member.id in AUTHORIZED_USERS && vol > 1.0) {
-                guildPlayer.setVolume(vol, interaction)
-                await interaction.reply({embeds: [createThemedEmbed("Error", "Volume set to 1. Cannot set the volume higher unless you're an authorized user!", 'Error')]})
-            } else {
-                guildPlayer.setVolume(vol, interaction)
-                await interaction.reply({embeds: [createThemedEmbed("Unimportant", `Set volume to ${vol}`, 'Changed Volume!')]})
-            }
+            guildPlayer.setVolume(vol)
+            await interaction.reply({embeds: [createThemedEmbed("Unimportant", `Set volume to ${vol}`, 'Changed Volume!')]})
         } else {
             await interaction.reply({embeds: [createThemedEmbed("Error", 'Cannot change the volume if nothing is playing!', 'Error')]})
         }

@@ -166,7 +166,7 @@ module.exports = {
                     await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(finished, videos?.length), `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
                 })
 
-                pipe.on("close", () => {download.destroy()})
+                pipe.on("close", () => { download.destroy() })
                 pipe.on("close", resolve)
             }))
 
