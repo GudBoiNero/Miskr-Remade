@@ -155,8 +155,6 @@ module.exports = {
                 const url = validVideoUrl.replace('__id__', id)
                 const filePath = path.join(dlPath, id) + '.ogg'
 
-                if (fs.existsSync(filePath)) return resolve;
-
                 const download = ytdl(url, { filter: 'audioonly', format: 'highestaudio' })
                 const pipe = download.pipe(fs.createWriteStream(filePath))
 

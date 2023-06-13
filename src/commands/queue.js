@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, CommandInteraction } = require("discord.js");
 const Globals = require("../globals.js");
 const createThemedEmbed = require("../util/createThemedEmbed.js");
-const { EmbedBuilder } = require("@discordjs/builders");
+const { EmbedBuilder, inlineCode } = require("@discordjs/builders");
 const { PagesManager, PagesBuilder } = require('discord.js-pages')
 
 module.exports = {
@@ -25,22 +25,28 @@ module.exports = {
         // Split tracks into chunks of `pageSize`
         let currentPage = 1
         for (let i = 0; i < tracks.length; i += pageSize, currentPage++) {
-            //console.log('Index: '+i, '\n', 'Page: '+currentPage)
             const page = tracks.slice(i, i + pageSize);
             const embed = new EmbedBuilder().setTitle('Current Queue')
-                .addFields({
-                    name: '\t',
-                    value: '**Playing:** ' + `[${guildPlayer.currentTrack.meta.result.title}](${guildPlayer.currentTrack.meta.result.url})`
-                })
+                .addFields(
+                    {
+                        name: '\u000b',
+                        value: '`0:` ' + `[${guildPlayer.currentTrack.meta.result.title}](${guildPlayer.currentTrack.meta.result.url})`,
+                        inline: true
+                    },
+                    { name: '\t', value: '`'+`${guildPlayer.currentTrack.meta.result.duration}`+'`', inline: true },
+                    { name: '\u000B', value: '\u000B' }
+                )
 
             page.forEach((track, index) => {
-                embed.addFields({
-                    name: '\t',
-                    value:
-                        `**${index + i + 1}:**` +
-                        ` [${track.meta.result.title}](${track.meta.result.url})   ` +
-                        `**${track.meta.result.duration}**`
-                })
+                embed.addFields(
+                    {
+                        name: `\t`,
+                        value: '`'+`${i + index + 1}.`+'`'+` [${track.meta.result.title}](${track.meta.result.url})`,
+                        inline: true
+                    },
+                    { name: '\t', value: '`'+`${track.meta.result.duration}`+'`', inline: true },
+                    { name: '\u000B', value: '\u000B' }
+                )
             })
 
             embeds.push(embed)
@@ -49,7 +55,8 @@ module.exports = {
         new PagesBuilder(interaction)
             .setTitle('Current Queue')
             .setPages(embeds)
-            .setColor('Green')
+            .setColor('Blurple')
+            .setDefaultButtons(['back', 'next'])
             .build()
     }
 }
