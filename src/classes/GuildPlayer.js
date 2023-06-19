@@ -152,15 +152,15 @@ class GuildPlayer {
      */
     disconnect() {
         if (this.destroyed) return;
+        
+        this.currentTrack = undefined
+        this.destroyed = true
 
         console.log(consoleColors.FG_GRAY + `Destroying GuildPlayer[${this.guildId}]...`)
 
         this.queue.reset()
         this.player.stop();
         this.connection.destroy();
-
-        this.currentTrack = undefined
-        this.destroyed = true
 
         this.emitter.emit('disconnected')
         console.log(consoleColors.FG_YELLOW + `Succesfully Destroyed GuildPlayer[${this.guildId}]!`)
