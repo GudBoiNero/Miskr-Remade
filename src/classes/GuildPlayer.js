@@ -155,8 +155,6 @@ class GuildPlayer {
 
         console.log(consoleColors.FG_GRAY + `Destroying GuildPlayer[${this.guildId}]...`)
 
-        console.log(consoleColors.FG_GRAY + `Destroying GuildPlayer[${this.guildId}]...`)
-
         this.queue.reset()
         this.player.stop();
         this.connection.destroy();
