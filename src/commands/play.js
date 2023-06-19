@@ -137,6 +137,8 @@ module.exports = {
                 Globals.setPlayer(guildId, newGuildPlayer)
                 await newGuildPlayer.start()
             }
+
+            await Globals.getPlayer(guildId).connection.rejoin()
             await interaction.editReply({ embeds: [createThemedEmbed("Action", `[${videos.at(0).title}](${videos.at(0).url})`, 'Now Playing:')] })
         }
         //#endregion
