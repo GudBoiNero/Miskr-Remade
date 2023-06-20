@@ -5,8 +5,15 @@ const { consoleColors } = require('./util/consoleColors.js')
 const { Client, GatewayIntentBits, Collection, Events, REST, Routes } = require('discord.js')
 const { CLIENT_TOKEN, CLIENT_ID } = require('./config.json');
 const { canUseVoiceCommand } = require('./util/voice.js');
+const { generateDependencyReport } = require('@discordjs/voice');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] })
+
+//#region Dependency Report
+
+console.log(consoleColors.FG_GRAY+generateDependencyReport())
+
+//#endregion
 
 //#region Command Initialization
 const commands = [];
