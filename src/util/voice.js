@@ -1,5 +1,6 @@
 const { CommandInteraction } = require("discord.js");
 const { consoleColors } = require("./consoleColors");
+const debug = require('../util/debug.js')
 
 module.exports = {
     /**
@@ -24,7 +25,7 @@ module.exports = {
         ) {
             await interaction.deferReply({ ephemeral: true });
             await interaction.editReply("You must be in a voice channel!");
-            console.log(consoleColors.FG_RED + "User not in channel or guild");
+            debug.log(consoleColors.FG_RED + "User not in channel or guild");
             canUse = false;
         } else if (
             !(
@@ -38,7 +39,7 @@ module.exports = {
             await interaction.editReply(
                 "You must be in the same voice channel as me!"
             );
-            console.log(consoleColors.FG_RED + "User not in same channel");
+            debug.log(consoleColors.FG_RED + "User not in same channel");
             canUse = false;
         }
 

@@ -1,0 +1,18 @@
+{
+    "config": {
+        "default_volume": 1.0 // 0.0 to 5.0
+    },
+    "playlists": [
+        {
+            "yt_link": "OPTIONAL", // Determines whether or not it is synced with a youtube playlist
+            "name": "Playlist Name",
+            "description": "OPTIONAL",
+
+            "videos": [
+                {
+                    "link": "https://www.youtube.com/watch?v=id"
+                }
+            ]
+        }
+    ]
+}

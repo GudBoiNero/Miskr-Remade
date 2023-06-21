@@ -1,0 +1,8 @@
+{
+    "CLIENT_ID": "Your discord bots id", 
+    "CLIENT_TOKEN": "Your discord bots token",
+    "AUTHORIZED_USERS": [
+        "Any user ID, allows bypass of certain command restrictions"
+    ],
+    "DEBUG_MODE": false
+}
