@@ -32,7 +32,7 @@ class GuildPlayer {
     }
 
     /**
-     * This is the entry point for the GuildPlayer process. All control flow should be managed here
+     * This is the entry point for the GuildPlayer process.
      * @returns {void}
      */
     async start() {
