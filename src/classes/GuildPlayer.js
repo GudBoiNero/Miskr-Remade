@@ -1,13 +1,11 @@
-const { createAudioPlayer, VoiceConnection, NoSubscriberBehavior, createAudioResource, StreamType, AudioResource } = require('@discordjs/voice')
+const { createAudioPlayer, VoiceConnection, createAudioResource, StreamType, AudioResource } = require('@discordjs/voice')
 const { CommandInteraction, Client } = require('discord.js')
-const { AUTHORIZED_USERS } = require('../config.json')
 const { consoleColors } = require('../util/consoleColors.js')
+const debug = require('../util/debug.js')
 
 const Queue = require('./Queue.js')
 const Track = require('./Track.js')
 const events = require('events')
-const Globals = require('../globals.js')
-const createThemedEmbed = require('../util/createThemedEmbed.js')
 
 class GuildPlayer {
     client = Client
@@ -44,8 +42,7 @@ class GuildPlayer {
         this.playTrack()
 
         this.connection.on('stateChange', (oldState, newState) => {
-            // DEBUG
-            // console.log(consoleColors.FG_YELLOW+`Connection transitioned from ${oldState.status} to ${newState.status}`); 
+            debug.log(consoleColors.FG_YELLOW+`Connection transitioned from ${oldState.status} to ${newState.status}`); 
 
             // This should be whenever the bot finished playing it's resource.
             if (oldState.status == 'ready' && newState.status == 'disconnected') {
@@ -54,8 +51,7 @@ class GuildPlayer {
         });
 
         this.player.on('stateChange', async (oldState, newState) => {
-            // DEBUG
-            // console.log(consoleColors.FG_RED+`Audio player transitioned from ${oldState.status} to ${newState.status}`);
+            debug.log(consoleColors.FG_RED+`Audio player transitioned from ${oldState.status} to ${newState.status}`);
 
             // This should be directly after a bot finishes playing and it has another track to play.
             if (newState.status == 'idle') {
@@ -156,14 +152,14 @@ class GuildPlayer {
         this.currentTrack = undefined
         this.destroyed = true
 
-        console.log(consoleColors.FG_GRAY + `Destroying GuildPlayer[${this.guildId}]...`)
+        debug.log(consoleColors.FG_GRAY + `Destroying GuildPlayer[${this.guildId}]...`)
 
         this.queue.reset()
         this.player.stop();
         this.connection.destroy();
 
         this.emitter.emit('disconnected')
-        console.log(consoleColors.FG_YELLOW + `Succesfully Destroyed GuildPlayer[${this.guildId}]!`)
+        debug.log(consoleColors.FG_YELLOW + `Succesfully Destroyed GuildPlayer[${this.guildId}]!`)
     }
 }
 

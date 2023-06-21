@@ -6,12 +6,13 @@ const { Client, GatewayIntentBits, Collection, Events, REST, Routes } = require(
 const { CLIENT_TOKEN, CLIENT_ID } = require('./config.json');
 const { canUseVoiceCommand } = require('./util/voice.js');
 const { generateDependencyReport } = require('@discordjs/voice');
+const debug = require("./util/debug.js")
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] })
 
 //#region Dependency Report
 
-console.log(consoleColors.FG_GRAY+generateDependencyReport())
+debug.log(consoleColors.FG_GRAY+generateDependencyReport())
 
 //#endregion
 
@@ -83,7 +84,7 @@ const rest = new REST().setToken(CLIENT_TOKEN);
 // and deploy your commands!
 (async () => {
 	try {
-		console.log(consoleColors.FG_GRAY + `Started refreshing ${commands.length} application (/) commands.`);
+		debug.log(consoleColors.FG_GRAY + `Started refreshing ${commands.length} application (/) commands.`);
 
 		// The put method is used to fully refresh all commands in the guild with the current set
 		await rest.put(
@@ -91,7 +92,7 @@ const rest = new REST().setToken(CLIENT_TOKEN);
 			{ body: commands },
 		);
 
-		console.log(consoleColors.FG_GRAY + `Successfully reloaded ${commands.length} application (/) commands.`);
+		debug.log(consoleColors.FG_GRAY + `Successfully reloaded ${commands.length} application (/) commands.`);
 	} catch (error) {
 		// And of course, make sure you catch and log any errors!
 		console.error(error);

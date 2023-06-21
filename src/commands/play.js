@@ -11,6 +11,7 @@ const fs = require('fs');
 const Queue = require("../classes/Queue.js");
 const createThemedEmbed = require("../util/createThemedEmbed.js");
 const { consoleColors } = require("../util/consoleColors.js");
+const debug = require("../util/debug.js")
 
 const validVideoUrl = "https://www.youtube.com/watch?v=__id__"
 const dlPath = path.join('./', 'res/dl')
@@ -71,7 +72,7 @@ module.exports = {
             const videos = []
             let result
 
-            console.log(consoleColors.FG_GRAY + `Searching for [${query}]`)
+            debug.log(consoleColors.FG_GRAY + `Searching for [${query}]`)
             while (!result && attempts < MAX_ATTEMPTS) {
                 const results = await ytsr(query, { "pages": 1 })
                 result = results?.items[0]
@@ -79,9 +80,9 @@ module.exports = {
                 attempts++
 
                 if (!result) {
-                    console.log(consoleColors.FG_GRAY + `Retrying...`)
+                    debug.log(consoleColors.FG_GRAY + `Retrying...`)
                 } else {
-                    console.log(consoleColors.FG_GRAY + `Found query in ${attempts} attempt${attempts > 1 ? 's' : ''}!`)
+                    debug.log(consoleColors.FG_GRAY + `Found query in ${attempts} attempt${attempts > 1 ? 's' : ''}!`)
                 }
             }
 
@@ -125,7 +126,7 @@ module.exports = {
                 tracks.push(track)
             }
             const queue = new Queue(tracks)
-            console.log(consoleColors.FG_GRAY + 'Running Queue...')
+            debug.log(consoleColors.FG_GRAY + 'Running Queue...')
 
             // Check if we don't already have a player
             const oldGuildPlayer = Globals.getPlayer(guildId)
@@ -162,12 +163,12 @@ module.exports = {
 
                 pipe.on("finish", async () => {
                     finished++
-                    console.log(consoleColors.FG_GRAY + `Downloaded [${video?.title ?? url}](${url})`)
+                    debug.log(consoleColors.FG_GRAY + `Downloaded [${video?.title ?? url}](${url})`)
                     await interaction.editReply({ embeds: [createThemedEmbed("Util", progBar(finished, videos?.length), `Downloading Video${videos?.length > 1 ? 's' : ''}!`)] })
                 })
 
-                pipe.on("close", () => { download.destroy() })
                 pipe.on("close", resolve)
+                pipe.on("error", reject)
             }))
 
         await Promise.all(downloads).then(async () => { await initPlayer() });
