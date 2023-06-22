@@ -1,7 +1,5 @@
-const { CommandInteraction, Client } = require("discord.js");
 const GuildPlayer = require("./classes/GuildPlayer");
 
-let globalClient = Client
 let instance;
 let cache = {
     players: {}
@@ -14,14 +12,6 @@ class GlobalState {
         }
 
         instance = this;
-    }
-
-    get(propertyName) {
-        return cache[propertyName];
-    }
-
-    set(propertyName, propertyValue) {
-        cache[propertyName] = propertyValue;
     }
 
     /**
