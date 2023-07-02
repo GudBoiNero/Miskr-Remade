@@ -78,8 +78,7 @@ class GuildPlayer {
      * Plays the current track
      */
     playTrack() {
-        this.currentResource = createAudioResource(this.currentTrack.path, { inputType: StreamType.OggOpus, inlineVolume: true })
-        this.currentResource.volume.setVolume(this.volume)
+        this.currentResource = createAudioResource(this.currentTrack.path, { inputType: StreamType.OggOpus, inlineVolume: false })
         this.player.play(this.currentResource)
         this.connection.subscribe(this.player)
     }
@@ -100,10 +99,10 @@ class GuildPlayer {
      * @param {Number} volume 
      * @param {CommandInteraction} interaction 
      */
-    setVolume(volume) {
+    /*setVolume(volume) {
         this.volume = Math.min(1, Math.max(0, volume))
         this.currentResource.volume.setVolume(this.volume)
-    }
+    }*/
 
     async trackFinished() {
         if (this.destroyed) return;
